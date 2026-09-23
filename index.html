@@ -403,7 +403,12 @@
         const fechaHoy = new Date().toISOString().split('T')[0];
         const isTestMode = document.getElementById("test-mode-checkbox").checked;
         let counts = { clase: 0, elegidos: 0, masterclass: 0, festival: 0 };
-        let totals = { clase: 200, elegidos: 200, masterclass: 200, festival: 200 }; 
+        let totals = { 
+            clase: dbCache.clase ? Object.keys(dbCache.clase).length : 0, 
+            elegidos: dbCache.elegidos ? Object.keys(dbCache.elegidos).length : 0, 
+            masterclass: dbCache.masterclass ? Object.keys(dbCache.masterclass).length : 0, 
+            festival: dbCache.festival ? Object.keys(dbCache.festival).length : 0 
+        }; 
 
         if (dbCache.clase) {
             Object.values(dbCache.clase).forEach(t => { if (t.asistencias && t.asistencias[fechaHoy]) counts.clase++; });
@@ -418,10 +423,10 @@
         document.getElementById("row-master").style.display = (fechaHoy === FECHAS_PERMITIDAS.masterclass || isTestMode) ? "flex" : "none";
         document.getElementById("row-festival").style.display = (fechaHoy === FECHAS_PERMITIDAS.festival || isTestMode) ? "flex" : "none";
 
-        document.getElementById("stat-clase").innerText = `${counts.clase}/${totals.clase} (${Math.round(counts.clase/totals.clase*100)}%)`;
-        document.getElementById("stat-elegidos").innerText = `${counts.elegidos}/${totals.elegidos} (${Math.round(counts.elegidos/totals.elegidos*100)}%)`;
-        document.getElementById("stat-master").innerText = `${counts.masterclass}/${totals.masterclass} (${Math.round(counts.masterclass/totals.masterclass*100)}%)`;
-        document.getElementById("stat-festival").innerText = `${counts.festival}/${totals.festival} (${Math.round(counts.festival/totals.festival*100)}%)`;
+        document.getElementById("stat-clase").innerText = `\({counts.clase}/\){totals.clase} (${totals.clase > 0 ? Math.round(counts.clase/totals.clase*100) : 0}%)`;
+        document.getElementById("stat-elegidos").innerText = `\({counts.elegidos}/\){totals.elegidos} (${totals.elegidos > 0 ? Math.round(counts.elegidos/totals.elegidos*100) : 0}%)`;
+        document.getElementById("stat-master").innerText = `\({counts.masterclass}/\){totals.masterclass} (${totals.masterclass > 0 ? Math.round(counts.masterclass/totals.masterclass*100) : 0}%)`;
+        document.getElementById("stat-festival").innerText = `\({counts.festival}/\){totals.festival} (${totals.festival > 0 ? Math.round(counts.festival/totals.festival*100) : 0}%)`;
         
         actualizarTablaAsistencia();
     }
@@ -454,9 +459,8 @@
         html += '</tr>';
         
         if (dbCache.clase) {
-            for (let i = 1; i <= 98; i++) {
-                let num = String(i).padStart(3, '0');
-                let codigo = `CLASE-2026-${num}`;
+            // Recorre dinámicamente los alumnos que realmente existen en tu base de datos
+            for (let codigo in dbCache.clase) {
                 let alumno = dbCache.clase[codigo];
                 
                 if (alumno) {
