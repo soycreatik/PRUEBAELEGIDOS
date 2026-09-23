@@ -2005,20 +2005,93 @@ function llenarSelectPermisos() {
         escanerBoletos = new Html5Qrcode("qr-reader-boletos");
         escanerBoletos.start(
             { facingMode: "environment" },
-            { fps: 15, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 }, // <-- ESTA ES LA CORRECCIÓN CLAVE
-            codigoQR => {
+            { fps: 15, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
+            (decodedText) => {
+                // 1. Apagamos la cámara primero
                 escanerBoletos.stop().then(() => {
                     document.getElementById("qr-reader-boletos").style.display = "none";
                     document.getElementById("btn-abrir-escaner-boletos").style.display = "block";
-                    document.getElementById("input-boleto").value = codigoQR;
+                    
+                    // 2. Colocamos el código escaneado en el input
+                    document.getElementById("input-boleto").value = decodedText;
+                    
+                    // 3. ¡Llamamos a la función que lo vincula a Firebase!
+                    vincularBoleto();
+                }).catch(err => {
+                    // Si la cámara tarda en apagarse, igual intentamos vincular el boleto
+                    document.getElementById("qr-reader-boletos").style.display = "none";
+                    document.getElementById("btn-abrir-escaner-boletos").style.display = "block";
+                    document.getElementById("input-boleto").value = decodedText;
                     vincularBoleto();
                 });
             },
-            err => { }
+            (err) => { /* Ignorar fallos de lectura continuos */ }
         ).catch(err => {
             alert("No se pudo iniciar la cámara. Verifica los permisos de tu navegador.");
             document.getElementById("qr-reader-boletos").style.display = "none";
             document.getElementById("btn-abrir-escaner-boletos").style.display = "block";
+        });
+    }
+
+    // ¡ESTA ES LA FUNCIÓN VITAL QUE FALTABA PARA QUE REGISTRE EL TICKET!
+    function vincularBoleto() {
+        const inputElement = document.getElementById("input-boleto");
+        const codigoBoleto = inputElement.value.trim().toUpperCase();
+        const codigoEstudiante = localStorage.getItem("elegidos_student_code");
+
+        if (!codigoBoleto) {
+            return alert("Por favor escanea un código QR válido.");
+        }
+
+        // Buscamos a cuál de los 3 eventos pertenece el código escaneado
+        const eventos = ['elegidos', 'masterclass', 'festival'];
+        const promesas = eventos.map(evento => db.ref(`${evento}/${codigoBoleto}`).once('value'));
+
+        Promise.all(promesas).then(snapshots => {
+            let eventoId = null;
+            let ticketData = null;
+
+            snapshots.forEach((snap, index) => {
+                if (snap.exists()) {
+                    eventoId = eventos[index];
+                    ticketData = snap.val();
+                }
+            });
+
+            if (!eventoId) {
+                inputElement.value = "";
+                return alert("❌ El ticket escaneado no es válido o no existe en el sistema.");
+            }
+
+            if (ticketData.vinculado_a && ticketData.vinculado_a !== codigoEstudiante) {
+                inputElement.value = "";
+                return alert("❌ Lo sentimos, este ticket ya fue vinculado por otro estudiante.");
+            }
+
+            if (ticketData.vinculado_a === codigoEstudiante) {
+                inputElement.value = "";
+                return alert("✅ Este ticket ya está registrado en tu cuenta.");
+            }
+
+            // Ticket válido y libre: procedemos a vincularlo al perfil del estudiante
+            const updates = {};
+            updates[`${eventoId}/${codigoBoleto}/vinculado_a`] = codigoEstudiante;
+            updates[`clase/${codigoEstudiante}/boletos/${codigoBoleto}`] = eventoId;
+            updates[`clase/${codigoEstudiante}/accesos_especiales/${eventoId}`] = true;
+
+            db.ref().update(updates).then(() => {
+                alert("🎉 ¡Boleto validado y vinculado exitosamente a tu perfil!");
+                inputElement.value = "";
+                // Refrescamos la pantalla para mostrar el nuevo boleto
+                renderizarBoletosVinculados(); 
+            }).catch(err => {
+                inputElement.value = "";
+                alert("Error al vincular el boleto: " + err);
+            });
+
+        }).catch(err => {
+            inputElement.value = "";
+            alert("Error de conexión al verificar el ticket.");
         });
     }
     function registrarRetoManual(codigoOpcional) {
