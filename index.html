@@ -441,16 +441,7 @@
 
             </div>
 
-            <!-- Input Box -->
-            <div class="noti-input-area">
-                <div class="noti-input-wrapper">
-                    <svg style="color: #c026d3; margin-right: 12px;" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                    <input type="text" placeholder="Escribe tu mensaje al soporte...">
-                    <button class="noti-send-btn">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                    </button>
-                </div>
-            </div>
+            
 
         </div>
     </div>
@@ -493,8 +484,8 @@
             } else if (filtroActual === 'leidas') {
                 filtradas = misNotificaciones.filter(n => n.leida === true);
             } else {
-                // Si es 'Todos', mostramos solo las NO leídas (para limpiar la bandeja principal)
-                filtradas = misNotificaciones.filter(n => !n.leida);
+                // Si es 'Todos', mostramos absolutamente todas las notificaciones
+                filtradas = misNotificaciones;
             }
 
             // Mostrar el estado vacío si no hay resultados
@@ -510,7 +501,7 @@
                 if (emptyState) emptyState.style.display = 'none';
                 
                 // Inyectar en el HTML ordenadas de la más nueva a la más vieja
-                filtradas.sort((a,b) => b.id - a.id).forEach(noti => {
+                filtradas.sort((a, b) => String(b.id).localeCompare(String(a.id))).forEach(noti => {
                     const esUnreadClass = noti.leida ? '' : 'unread';
                     const dotHTML = noti.leida ? '' : `<span class="dot-unread ${noti.color}"></span>`;
                     
@@ -591,91 +582,75 @@
             }
         }
         
-        // --- FUNCIÓN DE CONEXIÓN CON FIREBASE PARA RECIBIR NOTIFICACIONES (ANTENA RECEPTORA) ---
+        // --- 📡 SISTEMA AVANZADO DE RECEPCIÓN EN TIEMPO REAL (DOBLE ANTENA) ---
         function cargarNotificacionesGlobales() {
             const codigoActual = localStorage.getItem("elegidos_student_code");
-            if (!codigoActual) return; // No hacer nada si no hay nadie logueado
+            if (!codigoActual) return; // Si no hay usuario, apagamos la antena
 
-            // Escucha las notificaciones guardadas globalmente por el admin
-            db.ref('sistema/notificaciones_globales').on('value', snap => {
-                
-                // Inicializamos o recuperamos el array de leídas de la memoria local
+            let globales = [];
+            let personales = [];
+
+            // Motor interno para sincronizar y fusionar las dos bases de datos
+            function sincronizarBandeja() {
+                // Recuperar la memoria local de qué mensajes ya leyó el alumno
                 const leidasRaw = localStorage.getItem(`leidas_${codigoActual}`);
                 const leidas = leidasRaw ? JSON.parse(leidasRaw) : [];
                 
-                // Conservamos los mensajes del Chat con IA si existieran, filtrándolos
-                const notificacionesLocales = misNotificaciones.filter(n => n.tipo === 'mensaje' && String(n.id).length > 10 && !String(n.id).startsWith("NOTI_"));
+                // Combinar notificaciones globales + personales en una sola bandeja
+                let combinadas = [...globales, ...personales].map(noti => ({
+                    ...noti,
+                    // Verifica si el ID de la notificación está en la memoria de "leídas"
+                    leida: leidas.includes(noti.id)
+                }));
                 
-                let nuevasNotificaciones = [];
+                misNotificaciones = combinadas;
+                renderizarNotificaciones(); // Inyectar al HTML
+            }
 
+            // 📡 ANTENA 1: Escucha Anuncios Globales (Para toda la academia)
+            db.ref('sistema/notificaciones_globales').on('value', snap => {
+                globales = [];
                 if (snap.exists()) {
                     snap.forEach(child => {
-                        const notiData = child.val();
-                        
-                        // Agregar cada notificación del admin al array del estudiante
-                        nuevasNotificaciones.push({
+                        const data = child.val();
+                        globales.push({
                             id: child.key,
-                            tipo: notiData.tipo || 'sistema', 
-                            titulo: notiData.titulo || 'Nuevo Anuncio',
-                            cuerpo: notiData.cuerpo || '',
-                            fechaStr: notiData.fechaStr || 'Reciente',
-                            tiempoRelativo: notiData.tiempoRelativo || 'Ahora',
-                            color: notiData.color || 'blue',
-                            leida: leidas.includes(child.key), 
-                            iconoSVG: notiData.iconoSVG || `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>`
+                            tipo: data.tipo || 'promociones', // Pestaña Promociones
+                            titulo: data.titulo || 'Anuncio Oficial',
+                            cuerpo: data.cuerpo || '',
+                            fechaStr: data.fechaStr || 'Reciente',
+                            tiempoRelativo: data.tiempoRelativo || 'Hace un momento',
+                            color: data.color || 'purple',
+                            iconoSVG: data.iconoSVG || `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 12v10H4V12"></path><path d="M2 7h20v5H2z"></path><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg>`
                         });
                     });
                 }
-                
-                // Combinar los arrays y actualizar la lista oficial
-                misNotificaciones = [...notificacionesLocales, ...nuevasNotificaciones];
-                
-                // Refrescar la pantalla de notificaciones
-                renderizarNotificaciones();
+                sincronizarBandeja();
+            });
+
+            // 📡 ANTENA 2: Escucha Mensajes Personales (Admin -> Estudiante específico)
+            db.ref(`clase/${codigoActual}/notificaciones`).on('value', snap => {
+                personales = [];
+                if (snap.exists()) {
+                    snap.forEach(child => {
+                        const data = child.val();
+                        personales.push({
+                            id: child.key,
+                            tipo: data.tipo || 'mensajes', // Pestaña Mensajes
+                            titulo: data.titulo || 'Soporte ELEGIDOS',
+                            cuerpo: data.cuerpo || '',
+                            fechaStr: data.fechaStr || 'Reciente',
+                            tiempoRelativo: data.tiempoRelativo || 'Hace un momento',
+                            color: data.color || 'blue',
+                            iconoSVG: data.iconoSVG || `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>`
+                        });
+                    });
+                }
+                sincronizarBandeja();
             });
         }
 
-        // Ya no usamos DOMContentLoaded para arrancar la antena de golpe,
-        // lo enganchamos de forma segura cuando el Dashboard ya ha cargado.
-        const originalCargarDashboard = cargarDashboard;
-        cargarDashboard = function(codigo, data) {
-            originalCargarDashboard(codigo, data); // Llama a la original
-            setTimeout(() => {
-                cargarNotificacionesGlobales(); // Enciende la antena
-            }, 1500); // 1.5 segundos después para asegurar conexión
-        };
-
-        document.addEventListener("DOMContentLoaded", () => {
-            // Inicializar la escucha a Firebase al cargar la página
-            setTimeout(() => {
-                cargarNotificacionesGlobales();
-            }, 1000);
-        });
-
-    </script>
-
-    <script>
-        function abrirCentroNotificaciones() {
-            document.getElementById('modal-notificaciones').classList.add('activo');
-        }
-        function cerrarCentroNotificaciones() {
-            document.getElementById('modal-notificaciones').classList.remove('activo');
-        }
-
-        function verificarMensajesAdmin(hayMensajesNuevos) {
-            // Actualiza la notificación visual de la tarjeta principal si tienes mensajes
-            const tarjetaPromo = document.querySelector('.promo-card');
-            if (tarjetaPromo) {
-                if (hayMensajesNuevos) {
-                    tarjetaPromo.style.borderColor = 'rgba(234, 88, 12, 0.8)';
-                    tarjetaPromo.style.boxShadow = '0 0 20px rgba(234, 88, 12, 0.2)';
-                } else {
-                    tarjetaPromo.style.borderColor = 'rgba(255, 255, 255, 0.4)';
-                    tarjetaPromo.style.boxShadow = '0 10px 30px rgba(0,0,0,0.05)';
-                }
-            }
-        }
-    </script>
+        </script>
 
     <script>
         function abrirCentroNotificaciones() {
@@ -699,6 +674,7 @@
         verificarMensajesAdmin(true); 
     </script>
 
+    
     <!-- AQUÍ EMPIEZA TU PÁGINA ORIGINAL -->
     <div class="app-container">
         <!-- Contenido principal -->
@@ -1070,7 +1046,44 @@
     };
 
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+        const db = firebase.database();
+
+        // --- INICIO ANTENA SILENCIOSA ---
+        (function() {
+            let antenaActiva = false;
+            
+            // Verificador en segundo plano (cada 3 segundos) para detectar el inicio de sesión
+            setInterval(() => {
+                const codigoActual = localStorage.getItem("elegidos_student_code");
+                
+                if (codigoActual && !antenaActiva) {
+                    antenaActiva = true;
+                    // Ruta donde se registrará la actividad del estudiante
+                    const refPresencia = db.ref('/estudiantes_online/' + codigoActual);
+                    
+                    // Conexión con el sistema nativo de presencia de Firebase
+                    db.ref('.info/connected').on('value', function(snapshot) {
+                        if (snapshot.val() === false) return;
+                        
+                        // OnDisconnect: Si el usuario cierra la pestaña o pierde internet, Firebase lo marca offline automáticamente
+                        refPresencia.onDisconnect().set({
+                            estado: 'offline',
+                            ultima_desconexion: firebase.database.ServerValue.TIMESTAMP
+                        }).then(() => {
+                            // Si está conectado y navegando
+                            refPresencia.set({
+                                estado: 'online',
+                                ultima_conexion: firebase.database.ServerValue.TIMESTAMP
+                            });
+                        });
+                    });
+                } else if (!codigoActual && antenaActiva) {
+                    // Si el localStorage se vacía (cierre de sesión)
+                    antenaActiva = false; 
+                }
+            }, 3000); 
+        })();
+        // --- FIN ANTENA SILENCIOSA ---
 
     // Iniciar sesión anónima automáticamente al cargar para pasar las reglas de Firebase
     firebase.auth().signInAnonymously().catch((error) => {
@@ -1358,6 +1371,13 @@ function mostrarRecuperacion(mostrar) {
     function cargarDashboard(codigo, data) {
         document.getElementById("login-screen").style.display = "none";
         document.getElementById("dashboard-screen").classList.add("show");
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // Inicializar la escucha a Firebase al cargar la página
+            setTimeout(() => {
+                cargarNotificacionesGlobales();
+            }, 1000);
+        });
 
         const nombre = data.nombre ? data.nombre.toLowerCase() : "estudiante";
         document.getElementById("display-name").innerText = nombre;
@@ -2246,30 +2266,7 @@ function llenarSelectPermisos() {
             }
         });
 
-        db.ref('configuracion/anuncioGlobal').on('value', snap => {
-            if (snap.exists()) {
-                const data = snap.val();
-                const ahora = new Date();
-                const fechaExpiracion = new Date(data.expiracion);
-                
-                if (data.activo === true && fechaExpiracion > ahora) {
-                    if (localStorage.getItem('anuncio_visto_texto') !== data.mensaje) {
-                        document.getElementById('anuncio-global-texto').innerText = data.mensaje;
-                        const imgElem = document.getElementById('anuncio-global-img');
-                        if (data.imagen && data.imagen.length > 10) {
-                            imgElem.src = data.imagen;
-                            imgElem.style.display = "block";
-                        } else {
-                            imgElem.style.display = "none";
-                            imgElem.src = "";
-                        }
-                        document.getElementById('anuncio-global-overlay').style.display = 'flex';
-                    }
-                } else {
-                    document.getElementById('anuncio-global-overlay').style.display = 'none';
-                }
-            }
-        });
+        
 
         const savedCode = localStorage.getItem("elegidos_student_code");
         if (savedCode) {
