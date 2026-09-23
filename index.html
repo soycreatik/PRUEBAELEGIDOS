@@ -543,17 +543,21 @@
         function cargarNotificacionesGlobales() {
             // Escucha las notificaciones guardadas globalmente por el admin
             db.ref('sistema/notificaciones_globales').on('value', snap => {
-                misNotificaciones = []; // Reiniciamos para evitar duplicados
                 const codigoActual = localStorage.getItem("elegidos_student_code");
                 const leidas = JSON.parse(localStorage.getItem(`leidas_${codigoActual}`) || "[]");
+                
+                // Mantenemos los mensajes locales (los del chat con Creatik)
+                const notificacionesLocales = misNotificaciones.filter(n => n.tipo === 'mensaje' && String(n.id).length > 10);
+                
+                let nuevasNotificaciones = [];
 
                 if (snap.exists()) {
                     snap.forEach(child => {
                         const notiData = child.val();
                         // Agregar cada notificación del admin al array del estudiante
-                        misNotificaciones.push({
-                            id: child.key, // Usamos el timestamp como ID único
-                            tipo: notiData.tipo || 'mensaje', 
+                        nuevasNotificaciones.push({
+                            id: child.key, // Usamos el ID único de Firebase
+                            tipo: notiData.tipo || 'sistema', // 'sistema' o 'promocion' 
                             titulo: notiData.titulo || 'Nuevo Anuncio',
                             cuerpo: notiData.cuerpo || '',
                             fechaStr: notiData.fechaStr || 'Reciente',
@@ -564,6 +568,9 @@
                         });
                     });
                 }
+                
+                // Combinar las notificaciones locales (chat) con las del sistema (Firebase)
+                misNotificaciones = [...notificacionesLocales, ...nuevasNotificaciones];
                 
                 // Actualizar la interfaz después de cargar de Firebase
                 renderizarNotificaciones();
