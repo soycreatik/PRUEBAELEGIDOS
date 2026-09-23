@@ -653,7 +653,7 @@
             "2026-12-06"
         ];
 
-        // LECTURA EN TIEMPO REAL DESDE EL CACHÉ SINCRONIZADO EN VEZ DE .once('value')
+        // LECTURA EN TIEMPO REAL DESDE EL CACHÉ
         if (modoDetectado === 'clase') {
             const registro = dbCache['clase'] ? dbCache['clase'][token] : null;
             
@@ -662,7 +662,6 @@
                 return; 
             }
 
-            // Validación Unificada: ¿Es día de Evento Especial o de Clase?
             if (eventoEspecialDelDia) {
                 if (registro.asistencias && registro.asistencias[`evento_${eventoEspecialDelDia}`]) {
                     mostrarPantalla(resultDiv, false, registro.nombre, token, `Ingreso: ${registro.asistencias[`evento_${eventoEspecialDelDia}`]}`, eventoEspecialDelDia, "var(--status-used)", "YA INGRESÓ AL EVENTO");
@@ -689,7 +688,6 @@
                     enviarPingFeed(registro.nombre, token, `Ingreso Evento`);
                 });
             } else {
-                // Si NO es día de evento especial, procesar como clase normal
                 procesarAsistenciaClase(token, registro, fechaHoy, isTestMode, diaSemana, horaActualNum, minutosActuales, horaActualString, fechasOficialesClase, colorFondo, resultDiv);
             }
         } 
