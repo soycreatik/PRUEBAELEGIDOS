@@ -2069,7 +2069,7 @@ function llenarSelectPermisos() {
         }
     }
 
-    let escanerReto = null;
+   let escanerReto = null;
     function abrirEscanerReto() {
         document.getElementById("qr-reader").style.display = "block";
         document.getElementById("btn-abrir-escaner").style.display = "none";
@@ -2079,11 +2079,20 @@ function llenarSelectPermisos() {
             { facingMode: "environment" },
             { fps: 10, qrbox: 250 },
             codigoQR => {
-                escanerReto.stop().then(() => {
-                    document.getElementById("qr-reader").style.display = "none";
-                    document.getElementById("btn-abrir-escaner").style.display = "block";
-                    registrarRetoManual(codigoQR);
-                });
+                // Detiene la cámara e inmediatamente llama la función
+                if (escanerReto) {
+                    escanerReto.stop().then(() => {
+                        escanerReto.clear(); // Limpia la instancia visual
+                        document.getElementById("qr-reader").style.display = "none";
+                        document.getElementById("btn-abrir-escaner").style.display = "block";
+                        registrarRetoManual(codigoQR); // Llama a la acción
+                    }).catch(err => {
+                        // Si falla el apagado, la oculta a la fuerza y lanza la acción
+                        document.getElementById("qr-reader").style.display = "none";
+                        document.getElementById("btn-abrir-escaner").style.display = "block";
+                        registrarRetoManual(codigoQR);
+                    });
+                }
             },
             err => { }
         ).catch(err => {
@@ -2103,23 +2112,22 @@ function llenarSelectPermisos() {
             { facingMode: "environment" },
             { fps: 15, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
             (decodedText) => {
-                // 1. Apagamos la cámara primero
-                escanerBoletos.stop().then(() => {
-                    document.getElementById("qr-reader-boletos").style.display = "none";
-                    document.getElementById("btn-abrir-escaner-boletos").style.display = "block";
-                    
-                    // 2. Colocamos el código escaneado en el input
-                    document.getElementById("input-boleto").value = decodedText;
-                    
-                    // 3. ¡Llamamos a la función que lo vincula a Firebase!
-                    vincularBoleto();
-                }).catch(err => {
-                    // Si la cámara tarda en apagarse, igual intentamos vincular el boleto
-                    document.getElementById("qr-reader-boletos").style.display = "none";
-                    document.getElementById("btn-abrir-escaner-boletos").style.display = "block";
-                    document.getElementById("input-boleto").value = decodedText;
-                    vincularBoleto();
-                });
+                if (escanerBoletos) {
+                    // Detener cámara y limpiar la vista HTML
+                    escanerBoletos.stop().then(() => {
+                        escanerBoletos.clear();
+                        document.getElementById("qr-reader-boletos").style.display = "none";
+                        document.getElementById("btn-abrir-escaner-boletos").style.display = "block";
+                        
+                        document.getElementById("input-boleto").value = decodedText;
+                        vincularBoleto();
+                    }).catch(err => {
+                        document.getElementById("qr-reader-boletos").style.display = "none";
+                        document.getElementById("btn-abrir-escaner-boletos").style.display = "block";
+                        document.getElementById("input-boleto").value = decodedText;
+                        vincularBoleto();
+                    });
+                }
             },
             (err) => { /* Ignorar fallos de lectura continuos */ }
         ).catch(err => {
