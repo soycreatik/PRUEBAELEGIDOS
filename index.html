@@ -415,7 +415,8 @@
             
             // Cambiar estilos de los botones
             document.querySelectorAll('.noti-filter-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`.noti-filter-btn[data-tab="${tab}"]`).classList.add('active');
+            const btnActivo = document.querySelector(`.noti-filter-btn[data-tab="${tab}"]`);
+            if (btnActivo) btnActivo.classList.add('active');
             
             renderizarNotificaciones();
         }
@@ -425,6 +426,8 @@
             const container = document.getElementById('noti-list-container');
             const emptyState = document.getElementById('noti-empty-state');
             
+            if (!container) return;
+
             // Limpiar items anteriores (manteniendo el estado vacío oculto por ahora)
             container.querySelectorAll('.noti-item').forEach(item => item.remove());
 
@@ -444,17 +447,18 @@
 
             // Mostrar el estado vacío si no hay resultados
             if (filtradas.length === 0) {
-                emptyState.style.display = 'flex';
-                if(filtroActual === 'leidas') {
-                    emptyState.querySelector('p').innerText = "Aún no tienes mensajes leídos";
-                } else {
-                    emptyState.querySelector('p').innerText = "No tienes notificaciones nuevas";
+                if (emptyState) {
+                    emptyState.style.display = 'flex';
+                    const msgP = emptyState.querySelector('p');
+                    if (msgP) {
+                        msgP.innerText = (filtroActual === 'leidas') ? "Aún no tienes mensajes leídos" : "No tienes notificaciones nuevas";
+                    }
                 }
             } else {
-                emptyState.style.display = 'none';
+                if (emptyState) emptyState.style.display = 'none';
                 
-                // Inyectar en el HTML
-                filtradas.forEach(noti => {
+                // Inyectar en el HTML ordenadas de la más nueva a la más vieja
+                filtradas.sort((a,b) => b.id - a.id).forEach(noti => {
                     const esUnreadClass = noti.leida ? '' : 'unread';
                     const dotHTML = noti.leida ? '' : `<span class="dot-unread ${noti.color}"></span>`;
                     
@@ -464,7 +468,7 @@
                     
                     div.innerHTML = `
                         <div class="noti-icon ${noti.color}">
-                            ${noti.iconoSVG}
+                            ${noti.iconoSVG || `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>`}
                         </div>
                         <div class="noti-content">
                             <h4>${noti.titulo}</h4>
@@ -493,8 +497,19 @@
         function marcarComoLeida(id) {
             const notiIndex = misNotificaciones.findIndex(n => n.id === id);
             if (notiIndex !== -1 && !misNotificaciones[notiIndex].leida) {
-                misNotificaciones[notiIndex].leida = true; // Cambiar estado
-                renderizarNotificaciones(); // Refrescar pantalla
+                // Actualizar visualmente
+                misNotificaciones[notiIndex].leida = true;
+                renderizarNotificaciones();
+                
+                // Actualizar en localStorage para que el estudiante no vuelva a verla como "no leída"
+                const codigoActual = localStorage.getItem("elegidos_student_code");
+                if (codigoActual) {
+                    let leidas = JSON.parse(localStorage.getItem(`leidas_${codigoActual}`) || "[]");
+                    if (!leidas.includes(id)) {
+                        leidas.push(id);
+                        localStorage.setItem(`leidas_${codigoActual}`, JSON.stringify(leidas));
+                    }
+                }
             }
         }
 
@@ -502,144 +517,89 @@
         function actualizarContadoresNoti() {
             const noLeidas = misNotificaciones.filter(n => !n.leida).length;
             
-            document.getElementById('noti-count-todos').innerText = noLeidas;
-            
+            const countTodos = document.getElementById('noti-count-todos');
             const bellCounter = document.getElementById('noti-bell-counter');
             const headerSubtitle = document.getElementById('noti-header-subtitle');
             
+            if (countTodos) countTodos.innerText = noLeidas;
+            
             if (noLeidas > 0) {
-                bellCounter.innerText = noLeidas;
-                bellCounter.style.display = 'flex';
-                headerSubtitle.innerText = `Tienes ${noLeidas} mensajes nuevos`;
+                if (bellCounter) {
+                    bellCounter.innerText = noLeidas;
+                    bellCounter.style.display = 'flex';
+                }
+                if (headerSubtitle) headerSubtitle.innerText = `Tienes ${noLeidas} mensajes nuevos`;
+                
+                // Activar también la campana externa de la tarjeta de notificaciones
+                verificarMensajesAdmin(true);
             } else {
-                bellCounter.style.display = 'none';
-                headerSubtitle.innerText = `No tienes mensajes nuevos`;
+                if (bellCounter) bellCounter.style.display = 'none';
+                if (headerSubtitle) headerSubtitle.innerText = `No tienes mensajes nuevos`;
+                verificarMensajesAdmin(false);
             }
         }
+        
+        // --- FUNCIÓN DE CONEXIÓN CON FIREBASE PARA RECIBIR NOTIFICACIONES DEL ADMIN ---
+        function cargarNotificacionesGlobales() {
+            // Escucha las notificaciones guardadas globalmente por el admin
+            db.ref('sistema/notificaciones_globales').on('value', snap => {
+                misNotificaciones = []; // Reiniciamos para evitar duplicados
+                const codigoActual = localStorage.getItem("elegidos_student_code");
+                const leidas = JSON.parse(localStorage.getItem(`leidas_${codigoActual}`) || "[]");
 
-        /* 
-        // EJEMPLO DE CÓMO EL ADMIN PUEDE ENVIAR UNA NOTIFICACIÓN DESDE FIREBASE:
-        // Cuando configures firebase, solo llamas a esta función al recibir el dato
-        function simularRecepcionDesdeAdmin() {
-            misNotificaciones.push({
-                id: Date.now(), // ID único
-                tipo: 'promocion', // 'mensaje' o 'promocion'
-                titulo: 'Nueva Masterclass',
-                cuerpo: 'El ADMIN Glenda te invita a unirte a la nueva sesión fotográfica.',
-                fechaStr: 'Hoy • 08:00 PM',
-                tiempoRelativo: 'Ahora',
-                color: 'purple',
-                leida: false,
-                iconoSVG: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>`
+                if (snap.exists()) {
+                    snap.forEach(child => {
+                        const notiData = child.val();
+                        // Agregar cada notificación del admin al array del estudiante
+                        misNotificaciones.push({
+                            id: child.key, // Usamos el timestamp como ID único
+                            tipo: notiData.tipo || 'mensaje', 
+                            titulo: notiData.titulo || 'Nuevo Anuncio',
+                            cuerpo: notiData.cuerpo || '',
+                            fechaStr: notiData.fechaStr || 'Reciente',
+                            tiempoRelativo: notiData.tiempoRelativo || 'Ahora',
+                            color: notiData.color || 'blue',
+                            leida: leidas.includes(child.key), // Verificar en memoria local si ya la leyó
+                            iconoSVG: notiData.iconoSVG || `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>`
+                        });
+                    });
+                }
+                
+                // Actualizar la interfaz después de cargar de Firebase
+                renderizarNotificaciones();
             });
-            renderizarNotificaciones();
-        }
-        */
-
-        // Llamada inicial para cargar el estado vacío
-        renderizarNotificaciones();
-// 1. Fragmentación y ensamblado de la API Key en tiempo de ejecución
-const _part1 = "gsk_h8f06mt4bqmKOk";
-const _part2 = "susliGWGdyb3FYqdj6KC";
-const _part3 = "razNeVSHAvZST7a7IG";
-
-function getGroqClientKey() {
-    return _part1 + _part2 + _part3;
-}
-
-// 2. Función principal para interactuar con la API de Groq
-async function consultarGroqChat(mensajeUsuario) {
-    const API_URL = "https://api.groq.com/openai/v1/chat/completions";
-    const apiKey = getGroqClientKey();
-
-    try {
-        const response = await fetch(API_URL, {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${apiKey}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                model: "llama-3.3-70b-versatile", // Modelo rápido y eficiente de Groq
-                messages: [
-                    {
-                        role: "system",
-                        content: "Eres Creatik IA, un asistente virtual amable y experto en fotografía del programa ELEGIDOS. Responde de forma concisa y breve."
-                    },
-                    {
-                        role: "user",
-                        content: mensajeUsuario
-                    }
-                ],
-                temperature: 0.7
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`Error en la API: ${response.status}`);
         }
 
-        const data = await response.json();
-        return data.choices[0].message.content;
-
-    } catch (error) {
-        console.error("Error al conectar con Groq:", error);
-        return "Lo siento, ocurrió un error al procesar tu solicitud. Inténtalo de nuevo más tarde.";
-    }
-}
-
-// 3. Conexión del Input de la UI con la API
-document.addEventListener("DOMContentLoaded", () => {
-    const btnEnviar = document.querySelector(".noti-send-btn");
-    const inputMensaje = document.querySelector(".noti-input-wrapper input");
-
-    async function manejarEnvioMensaje() {
-        const texto = inputMensaje.value.trim();
-        if (!texto) return;
-
-        // Limpiar el campo de texto
-        inputMensaje.value = "";
-
-        // Agregar el mensaje enviado por el estudiante localmente
-        misNotificaciones.push({
-            id: Date.now(),
-            tipo: 'mensaje',
-            titulo: 'Tú',
-            cuerpo: texto,
-            fechaStr: 'Hoy • Ahora',
-            tiempoRelativo: 'Ahora',
-            color: 'blue',
-            leida: true,
-            iconoSVG: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`
+        document.addEventListener("DOMContentLoaded", () => {
+            // Inicializar la escucha a Firebase al cargar la página
+            setTimeout(() => {
+                cargarNotificacionesGlobales();
+            }, 1000);
         });
-        renderizarNotificaciones();
 
-        // Respuesta de la IA con Groq
-        const respuestaIA = await consultarGroqChat(texto);
+    </script>
 
-        // Agregar la respuesta de Creatik IA al listado
-        misNotificaciones.push({
-            id: Date.now() + 1,
-            tipo: 'mensaje',
-            titulo: 'Creatik IA',
-            cuerpo: respuestaIA,
-            fechaStr: 'Hoy • Ahora',
-            tiempoRelativo: 'Ahora',
-            color: 'purple',
-            leida: false,
-            iconoSVG: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>`
-        });
-        renderizarNotificaciones();
-    }
+    <script>
+        function abrirCentroNotificaciones() {
+            document.getElementById('modal-notificaciones').classList.add('activo');
+        }
+        function cerrarCentroNotificaciones() {
+            document.getElementById('modal-notificaciones').classList.remove('activo');
+        }
 
-    if (btnEnviar && inputMensaje) {
-        btnEnviar.addEventListener("click", manejarEnvioMensaje);
-        inputMensaje.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") manejarEnvioMensaje();
-        });
-    }
-});
-
+        function verificarMensajesAdmin(hayMensajesNuevos) {
+            // Actualiza la notificación visual de la tarjeta principal si tienes mensajes
+            const tarjetaPromo = document.querySelector('.promo-card');
+            if (tarjetaPromo) {
+                if (hayMensajesNuevos) {
+                    tarjetaPromo.style.borderColor = 'rgba(234, 88, 12, 0.8)';
+                    tarjetaPromo.style.boxShadow = '0 0 20px rgba(234, 88, 12, 0.2)';
+                } else {
+                    tarjetaPromo.style.borderColor = 'rgba(255, 255, 255, 0.4)';
+                    tarjetaPromo.style.boxShadow = '0 10px 30px rgba(0,0,0,0.05)';
+                }
+            }
+        }
     </script>
 
     <script>
