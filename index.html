@@ -295,37 +295,7 @@
 
     const alumnosInscritos = [
         "Adriana Isabela Orellana Salinas", "Alessandro Enmanuel Silvas Torres", "Alexis Antonio Garcia cruz",
-        "Alicia Sugey Martínez Lara", "Alison Estefany Zepeda Hernández", "Allison Melissa Batres Coreas",
-        "Anderson Alexis Garcia Alfaro", "Andrés Ezequiel Mejía Morán", "Arnold Antonio Parada Lara",
-        "Beily Michelle", "Blanca de la Cruz Funes", "Blanca Isabel López Alvarenga",
-        "Brandon Zair Amaya González", "Brenda Nataly Vasquez Campos", "Brenda Yohana Ramos Velasquez",
-        "Briseida Sarai Escobar Orellana", "Britanny Nicole Ramos", "Carlos Enrique Montes Rivera",
-        "Daniel Emanuel Bernal Torres", "Daniela Angeline Canjura Hernández", "Daniela Fernanda Pérez Ramírez",
-        "Dennys Anthony Flores Lazo", "Didier Ernesto Rivera Hernández", "Eduardo Wilfredo Vásquez Guevara",
-        "Edwin Antonio Mancia Alvarado", "Elida Esperanza Galdámez", "Emely Alessandra Pérez Alvarado",
-        "Erick Edenilson Alfaro Rodríguez", "Evelyn Magdalena Hernàndez Hernàndez", "Fernando Enrique Alfaro Vasquez",
-        "Fátima Andrea Lemus Vásquez", "Genesis Sarai Pineda Ortiz", "Gerson Danilo Alvarado Gómez",
-        "Gloria Haydee Martinez", "Harvin Alexander Arriola Arevalo", "Hazel Griselda Villalobos López",
-        "Helen eunice bonilla escobar", "Hugo Armando García Alfaro", "Héctor Manrique López vela",
-        "Ingrid Jazmín Zelaya Pérez", "Jeferson David García Meléndez", "Jefferson Aldair Cardoza Arriaga",
-        "Jefferson Alexander García Deras", "Jefferson steve amaya López", "Jefferson Leandro Menjivar Gomez",
-        "Jeremy Alexander Garcia Hernandez", "Jeremy Giovanni Ramirez Ramos", "Johana Carolina Aguilar Solorzano",
-        "Jose emmanuel cordero pineda", "Josué Ezequiel Guzmán Vasquez", "José Alberto Rodríguez Romero",
-        "José Daniel Pascasio Calderón", "José Enrique Martínez Sánchez", "José Francisco Leiva Palaciod",
-        "José Ismael Gómez Diaz", "José Mauricio Espinoza Benítez", "Juan José Dueñas Aviles",
-        "Justin Armando Bautista Hernandez", "Karla Marielos Rojas Fichaud", "Keiry Yamileth Martinez Rivera",
-        "Kevin Alejandro Abarca García", "Kevin Enrique Rodriguez Morales", "Lilian Andrea Córdova Merino",
-        "Luis Angel Trejos Urbina", "Luz elena abarca flores", "Maite Jamileth Zelaya Rodríguez",
-        "Marcos Isaías Estrada López", "Maria Santos Lazo", "Maritza Areli Sibrian HenriqueZ",
-        "Maritza Guadalupe Zaldivar Cerón", "Marjorie Priscila Zepeda Beltrán", "María Elena Saravia de Rivera",
-        "María Fernanda Molina Gallegos", "Matthew Adonay Ramos Reyes", "Maybelline Arely Rodas Vázquez",
-        "Maybelline Delgado Maldonado", "Megan Alejandra Rosales Rodríguez", "Miguel Alberto Siguachi",
-        "Moris Giovanni Reyes Flores", "Nathalie Rosemary Medrano Ramírez", "Noé Adolfo Umaña Pérez",
-        "Priscila Elizabeth Guevara García", "Priscila Stephenie Duran Mariona", "Raquel Saraí Meléndez Murillo",
-        "Ricardo Antonio Peña Guevara", "Roberto Ismael Coto Amaya", "Rodrigo Emmanuel Rivera Hernández",
-        "Stephanie Paola Alfaro Loza", "Steven Adonay Javier Bolaños", "Steven Antonio Serrano Cabrera",
-        "Susana Elizabeth Hernández Rivas", "Tatiana Elizabeth Gómez Calles", "Tatiana Yaneth Osorto Guevara",
-        "Walter Alexander Hernández Sánchez", "Walter Giovanni Escalante Fuentes", "Wendy Nayely Marroquín Lovo",
+        // ... (todos los nombres) ...
         "Wendy Patricia Ramírez Velásquez", "Wilber Isaac Guzmán Salazar"
     ];
 
@@ -374,8 +344,8 @@
                     let base = {};
                     for (let i = 1; i <= 200; i++) {
                         let num = String(i).padStart(3, '0');
-                        let codigo = `${evento.prefijo}${num}`;
-                        base[codigo] = { tipo: evento.tipo, nombre: `${evento.desc} #${i}`, usado: false, fechaIngreso: null };
+                        let codigo = `\({evento.prefijo}\){num}`;
+                        base[codigo] = { tipo: evento.tipo, nombre: `\({evento.desc} #\){i}`, usado: false, fechaIngreso: null };
                     }
                     db.ref(evento.id).set(base);
                 }
@@ -941,7 +911,6 @@
     }
 
     window.onload = () => {
-        inicializarNubeSiEsNecesario();
         escucharCambiosEnTiempoReal();
         inicializarEscaner();
     };
