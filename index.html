@@ -1371,7 +1371,24 @@ function mostrarRecuperacion(mostrar) {
     function cargarDashboard(codigo, data) {
         document.getElementById("login-screen").style.display = "none";
         document.getElementById("dashboard-screen").classList.add("show");
+// --- CONEXIÓN DE ESTADO ONLINE EN TIEMPO REAL ---
+    const codigoAlumno = codigo; // Toma dinámicamente el código del estudiante activo
+    const userRef = firebase.database().ref('clase/' + codigoAlumno);
+    const connectedRef = firebase.database().ref('.info/connected');
 
+    connectedRef.on('value', (snap) => {
+      if (snap.val() === true) {
+        // Alumno está dentro del portal
+        userRef.update({
+          online: true,
+          ultima_conexion: firebase.database.ServerValue.TIMESTAMP
+        });
+
+        // Detectar cuando el alumno cierra la pestaña o pierde conexión
+        userRef.child('online').onDisconnect().set(false);
+        userRef.child('ultima_conexion').onDisconnect().set(firebase.database.ServerValue.TIMESTAMP);
+      }
+    });
         document.addEventListener("DOMContentLoaded", () => {
             // Inicializar la escucha a Firebase al cargar la página
             setTimeout(() => {
