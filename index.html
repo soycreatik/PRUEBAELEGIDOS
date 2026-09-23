@@ -697,7 +697,7 @@
             <h1 class="login-title">Portal Estudiantil</h1>
             <p class="login-subtitle">Ingresa para ver tu asistencia, QR y clases.</p>
 
-            <input type="text" id="input-codigo" class="input-field" placeholder="Tu Código (Ej: CLASE-2026-001)" autocomplete="off">
+            <input type="text" id="input-codigo" class="input-field" placeholder="Tus 3 dígitos (Ej: 001)" autocomplete="off">
             <input type="password" id="input-clave" class="input-field" placeholder="Contraseña (ELEGIDOS26)">
             
             <button class="btn-main" onclick="iniciarSesion()">Acceder a mi perfil</button>
@@ -1311,7 +1311,7 @@ function mostrarRecuperacion(mostrar) {
     }
 
     function iniciarSesion() {
-        const codigoInput = document.getElementById("input-codigo").value.trim().toUpperCase();
+        let codigoInput = document.getElementById("input-codigo").value.trim().toUpperCase();
         const claveInput = document.getElementById("input-clave").value.trim();
         const errorMsg = document.getElementById("error-msg");
 
@@ -1319,6 +1319,11 @@ function mostrarRecuperacion(mostrar) {
             errorMsg.innerText = "Por favor, ingresa tu código y contraseña.";
             errorMsg.style.display = "block";
             return;
+        }
+
+        // --- AUTO-COMPLETAR CÓDIGO CON LOS 3 ÚLTIMOS NÚMEROS ---
+        if (/^\d{1,3}$/.test(codigoInput)) {
+            codigoInput = "CLASE-2026-" + codigoInput.padStart(3, '0');
         }
 
         // Lógica exclusiva para perfiles de directores
@@ -1338,7 +1343,7 @@ function mostrarRecuperacion(mostrar) {
             }
         }
 
-        // Lógica para ESTUDIANTES (Desbloqueada y conectada a Firebase)
+        // Lógica para ESTUDIANTES
         errorMsg.style.display = "none";
         const btn = document.querySelector('#login-form .btn-main');
         if(btn) btn.innerText = "Verificando...";
@@ -1731,6 +1736,17 @@ function mostrarRecuperacion(mostrar) {
         });
     });
 }
+
+function mostrarImagenBoleto(codigo, eventoId) {
+        const IMAGENES_EVENTOS = { elegidos: "ticket MAHU.jpg", masterclass: "ticket DREAMEZ.jpg", festival: "ticket FESTIVAL.jpg" };
+        const imgName = IMAGENES_EVENTOS[eventoId];
+        
+        if (imgName) {
+            window.open(imgName, "_blank");
+        } else {
+            alert("La imagen del boleto no está disponible en este momento.");
+        }
+    }
 
     function cambiarSeccion(tab, index) {
         if (!esInvitado && datosEstudianteActual) {
