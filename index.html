@@ -1657,8 +1657,25 @@ function mostrarRecuperacion(mostrar) {
         }
     }
 
-    const FECHAS_EVENTOS = { elegidos: "2026-10-04", masterclass: "2026-10-27", festival: "2026-11-08" };
-    const IMAGENES_EVENTOS = { elegidos: "ticket MAHU.jpg", masterclass: "ticket DREAMEZ.jpg", festival: "ticket FESTIVAL.jpg" };
+    const FECHAS_EVENTOS = { 
+        elegidos: "2026-10-04", 
+        mahu: "2026-10-04", 
+        masterclass: "2026-10-27", 
+        dreamez: "2026-10-27", 
+        roberto: "2026-11-01", 
+        martell: "2026-11-01", 
+        festival: "2026-11-08" 
+    };
+    
+    const IMAGENES_EVENTOS = { 
+        elegidos: "ticket MAHU.jpg", 
+        mahu: "ticket MAHU.jpg", 
+        masterclass: "ticket DREAMEZ.jpg", 
+        dreamez: "ticket DREAMEZ.jpg", 
+        roberto: "ticket MARTELL.jpg", 
+        martell: "ticket MARTELL.jpg", 
+        festival: "ticket FESTIVAL.jpg" 
+    };
 
    function renderizarBoletosVinculados() {
     const contenedor = document.getElementById("contenedor-boletos");
@@ -1738,8 +1755,18 @@ function mostrarRecuperacion(mostrar) {
 }
 
 function mostrarImagenBoleto(codigo, eventoId) {
-        const IMAGENES_EVENTOS = { elegidos: "ticket MAHU.jpg", masterclass: "ticket DREAMEZ.jpg", festival: "ticket FESTIVAL.jpg" };
-        const imgName = IMAGENES_EVENTOS[eventoId];
+        const IMAGENES_EVENTOS = { 
+            elegidos: "ticket MAHU.jpg", 
+            mahu: "ticket MAHU.jpg", 
+            masterclass: "ticket DREAMEZ.jpg", 
+            dreamez: "ticket DREAMEZ.jpg", 
+            roberto: "ticket MARTELL.jpg", 
+            martell: "ticket MARTELL.jpg", 
+            festival: "ticket FESTIVAL.jpg" 
+        };
+        
+        const key = (eventoId || "").toLowerCase().trim();
+        const imgName = IMAGENES_EVENTOS[key];
         
         if (imgName) {
             window.open(imgName, "_blank");
@@ -2112,8 +2139,8 @@ function llenarSelectPermisos() {
             return alert("Por favor escanea un código QR válido.");
         }
 
-        // Buscamos a cuál de los 3 eventos pertenece el código escaneado
-        const eventos = ['elegidos', 'masterclass', 'festival'];
+        // Buscamos a cuál de los eventos pertenece el código escaneado
+        const eventos = ['elegidos', 'mahu', 'masterclass', 'dreamez', 'roberto', 'martell', 'festival'];
         const promesas = eventos.map(evento => db.ref(`${evento}/${codigoBoleto}`).once('value'));
 
         Promise.all(promesas).then(snapshots => {
