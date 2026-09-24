@@ -82,7 +82,23 @@
 
         .content-area { padding: 0 24px; position: relative; z-index: 10; margin-top: 15px; }
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 20px; }
-        .stat-card { padding: 12px 4px; border-radius: 16px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 4px; background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(35px); -webkit-backdrop-filter: blur(35px); border: 1px solid rgba(255, 255, 255, 0.4); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05), inset 0 0 0 1px rgba(255, 255, 255, 0.3); position: relative; overflow: hidden; }
+        .stat-card { padding: 12px 4px; border-radius: 16px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 4px; background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.4); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05), inset 0 0 0 1px rgba(255, 255, 255, 0.3); position: relative; overflow: hidden; }
+
+        /* --- ESTILOS DE LA RULETA EN VIVO --- */
+        @keyframes pulseRuleta { 
+            0% { transform: scale(1); box-shadow: 0 0 15px rgba(255,0,200,0.6); } 
+            50% { transform: scale(1.08); box-shadow: 0 0 35px rgba(255,0,200,1); } 
+            100% { transform: scale(1); box-shadow: 0 0 15px rgba(255,0,200,0.6); } 
+        }
+        @keyframes ruletaAparece {
+            from { opacity: 0; backdrop-filter: blur(0px); }
+            to { opacity: 1; backdrop-filter: blur(25px); }
+        }
+        .ruleta-nombre-item {
+            padding: 15px 0; color: #fff; font-size: 3rem; font-weight: 900;
+            text-shadow: 0 10px 25px rgba(139, 0, 255, 0.8);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
         .stat-icon { width: 30px; height: 30px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #ffffff; flex-shrink: 0; margin-bottom: 2px; }
         .stat-icon svg { width: 16px; height: 16px; }
         .stat-card::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; border-radius: 0 0 16px 16px; }
@@ -106,7 +122,6 @@
         .categories-wrapper { display: flex; align-items: center; gap: 10px; overflow-x: auto; padding-bottom: 15px; margin-bottom: 24px; scrollbar-width: none; }
         .categories-wrapper::-webkit-scrollbar { display: none; }
         .cat-btn { min-width: max-content; background: transparent; border: none; border-radius: 100px; padding: 8px 20px; text-align: center; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px; color: var(--text-muted); box-shadow: none; }
-        .cat-btn.active { background: #0a0a0a; color: #ffffff; box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); }
         .cat-btn.active { border-color: #000; background: #000; color: #ffffff; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); }
         .cat-icon { display: inline-flex; align-items: center; justify-content: center; }
         .cat-label { font-size: 0.9rem; font-weight: 800; }
@@ -264,7 +279,7 @@
             .btn-logout { position: relative; right: auto; top: auto; transform: none; padding: 12px 20px; font-size: 0.95rem; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); z-index: 10; flex-shrink: 0; }
             .btn-logout:hover { transform: translateY(-2px); }
 
-            .content-area { flex: 1; padding: 135px 60px 70px 60px; margin-top: 0; background: transparent; position: relative; z-index: 10; }
+            .content-area { flex: 1; padding: 20px 60px 70px 60px; margin-top: 0; background: transparent; position: relative; z-index: 10; overflow: visible; }
             .categories-wrapper { display: none; }
             .class-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
             .calendar-card { max-width: 100%; }
@@ -295,8 +310,6 @@
     </style>
 
 </head>
-<body>
-
 <body>
 
    <!-- ESTILOS DEL CENTRO DE NOTIFICACIONES -->
@@ -380,6 +393,115 @@
             .noti-input-area { padding: 15px 20px 20px; }
             .noti-header-left img { height: 24px; }
             .noti-header-center h3 { font-size: 1rem; }
+        }
+
+        /* --- ESTILOS DE MIS CALIFICACIONES Y ASISTENCIAS (GLASSMORPHISM DARK) --- */
+        .calif-container {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 28px;
+            padding: 24px;
+            margin-bottom: 25px;
+            color: #fff;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .calif-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .calif-summary-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 16px 12px;
+            text-align: center;
+        }
+
+        .calif-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .calif-status-seguro { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
+        .calif-status-ajuste { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .calif-status-riesgo { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+        .calif-table-wrapper {
+            overflow-x: auto;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .calif-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.85rem;
+        }
+
+        .calif-table th {
+            background: rgba(255, 255, 255, 0.03);
+            color: #94a3b8;
+            padding: 14px;
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .calif-table td {
+            padding: 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #e2e8f0;
+            font-weight: 600;
+        }
+
+        .calif-nota-pill {
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-weight: 900;
+            font-size: 0.9rem;
+            display: inline-block;
+            text-align: center;
+            min-width: 45px;
+        }
+        .nota-excelente { background: rgba(217, 70, 239, 0.2); color: #f472b6; border: 1px solid rgba(217, 70, 239, 0.4); }
+        .nota-buena { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); }
+        .nota-regular { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+        .nota-baja { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+
+        
+   
+
+        /* --- ESTILOS DE LA RULETA EN VIVO --- */
+        @keyframes pulseRuleta { 
+            0% { transform: scale(1); box-shadow: 0 0 15px rgba(255,0,200,0.6); } 
+            50% { transform: scale(1.08); box-shadow: 0 0 35px rgba(255,0,200,1); } 
+            100% { transform: scale(1); box-shadow: 0 0 15px rgba(255,0,200,0.6); } 
+        }
+        @keyframes ruletaAparece {
+            from { opacity: 0; backdrop-filter: blur(0px); }
+            to { opacity: 1; backdrop-filter: blur(25px); }
+        }
+        .ruleta-nombre-item {
+            padding: 15px 0; color: #fff; font-size: 3rem; font-weight: 900;
+            text-shadow: 0 10px 25px rgba(139, 0, 255, 0.8);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
     </style>
 
@@ -484,8 +606,8 @@
             } else if (filtroActual === 'leidas') {
                 filtradas = misNotificaciones.filter(n => n.leida === true);
             } else {
-                // Si es 'Todos', mostramos absolutamente todas las notificaciones
-                filtradas = misNotificaciones;
+                // Si es 'Todos', mostramos solo las que NO han sido leídas
+                filtradas = misNotificaciones.filter(n => !n.leida);
             }
 
             // Mostrar el estado vacío si no hay resultados
@@ -563,6 +685,8 @@
             const countTodos = document.getElementById('noti-count-todos');
             const bellCounter = document.getElementById('noti-bell-counter');
             const headerSubtitle = document.getElementById('noti-header-subtitle');
+            // Buscamos el subtítulo de la tarjeta naranja principal
+            const cardSubtitle = document.querySelector('.promo-card span');
             
             if (countTodos) countTodos.innerText = noLeidas;
             
@@ -572,20 +696,31 @@
                     bellCounter.style.display = 'flex';
                 }
                 if (headerSubtitle) headerSubtitle.innerText = `Tienes ${noLeidas} mensajes nuevos`;
-                
-                // Activar también la campana externa de la tarjeta de notificaciones
+                // Cambiar el texto de la tarjeta principal si hay mensajes
+                if (cardSubtitle) {
+                    cardSubtitle.innerText = `Tienes ${noLeidas} mensaje(s) sin leer`;
+                    cardSubtitle.style.color = "#ea580c";
+                }
                 verificarMensajesAdmin(true);
             } else {
                 if (bellCounter) bellCounter.style.display = 'none';
                 if (headerSubtitle) headerSubtitle.innerText = `No tienes mensajes nuevos`;
+                // Restaurar el texto de la tarjeta principal
+                if (cardSubtitle) {
+                    cardSubtitle.innerText = `Ver anuncios recientes`;
+                    cardSubtitle.style.color = "#4b5563";
+                }
                 verificarMensajesAdmin(false);
             }
         }
         
         // --- 📡 SISTEMA AVANZADO DE RECEPCIÓN EN TIEMPO REAL (DOBLE ANTENA) ---
+        let antenaNotificacionesActiva = false;
         function cargarNotificacionesGlobales() {
+            if (antenaNotificacionesActiva) return; // Evita duplicar oyentes en bucle
             const codigoActual = localStorage.getItem("elegidos_student_code");
-            if (!codigoActual) return; // Si no hay usuario, apagamos la antena
+            if (!codigoActual) return; 
+            antenaNotificacionesActiva = true;
 
             let globales = [];
             let personales = [];
@@ -596,14 +731,25 @@
                 const leidasRaw = localStorage.getItem(`leidas_${codigoActual}`);
                 const leidas = leidasRaw ? JSON.parse(leidasRaw) : [];
                 
-                // Combinar notificaciones globales + personales en una sola bandeja
-                let combinadas = [...globales, ...personales].map(noti => ({
-                    ...noti,
-                    // Verifica si el ID de la notificación está en la memoria de "leídas"
-                    leida: leidas.includes(noti.id)
-                }));
+                // Combinar notificaciones globales + personales y eliminar duplicadas
+                let combinadasRaw = [...globales, ...personales];
+                let combinadasUnicas = [];
+                let vistos = new Set();
                 
-                misNotificaciones = combinadas;
+                combinadasRaw.forEach(noti => {
+                    // Creamos una llave única juntando el título y el cuerpo
+                    const claveUnica = noti.titulo + "|" + noti.cuerpo;
+                    if(!vistos.has(claveUnica)) {
+                        vistos.add(claveUnica);
+                        combinadasUnicas.push({
+                            ...noti,
+                            // Verifica si el ID de la notificación está en la memoria de "leídas"
+                            leida: leidas.includes(noti.id)
+                        });
+                    }
+                });
+                
+                misNotificaciones = combinadasUnicas;
                 renderizarNotificaciones(); // Inyectar al HTML
             }
 
@@ -687,8 +833,6 @@
     @keyframes splashPulse { 0% { transform: scale(0.95); opacity: 0.7; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.7; } }
 </style>
 
-<div class="app-container">
-
    <!-- LOGIN -->
 
    <div id="login-screen" style="width: 100%;">
@@ -711,12 +855,13 @@
 
         <div id="recovery-form" style="display: none;">
             <h1 class="login-title" style="font-size: 2.5rem;">Cambiar Clave</h1>
-            <p class="login-subtitle">Ingresa tu código y tu nueva contraseña.</p>
+            <p class="login-subtitle">Ingresa tu código y el correo vinculado a tu cuenta.</p>
 
             <input type="text" id="rec-codigo" class="input-field" placeholder="Tu Código (Ej: CLASE-2026-001)" autocomplete="off">
             
-            <div id="rec-antigua-container" style="display:none; width: 100%; justify-content: center;">
-                <input type="password" id="rec-antigua" class="input-field" placeholder="Contraseña Actual" style="margin-bottom: 16px;">
+            <div id="rec-correo-container" style="display:none; width: 100%; justify-content: center; flex-direction: column; align-items: center;">
+                <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 10px; font-weight: 600; text-align: center;">Por seguridad, verifica el correo vinculado:</p>
+                <input type="email" id="rec-correo" class="input-field" placeholder="Correo electrónico de recuperación" style="margin-bottom: 16px;">
             </div>
             
             <input type="password" id="rec-nueva" class="input-field" placeholder="Nueva Contraseña (Mín. 4 caracteres)">
@@ -728,18 +873,196 @@
 
         <div id="create-form" style="display: none;">
             <h1 class="login-title" style="font-size: 2.5rem;">Nuevo Ingreso</h1>
-            <p class="login-subtitle">Ingresa tu nombre y crea tu clave para buscar un código libre.</p>
+            <p class="login-subtitle">Crea tu perfil y vincula un correo de recuperación.</p>
 
             <input type="text" id="crear-nombre" class="input-field" placeholder="Tu Nombre Completo" autocomplete="off">
+            <input type="email" id="crear-correo" class="input-field" placeholder="Correo electrónico (Para recuperar clave)" autocomplete="off">
             <input type="password" id="crear-clave" class="input-field" placeholder="Crea una contraseña (Mín. 4 caracteres)">
             
             <button class="btn-main" id="btn-crear-usuario" onclick="procesarCrearUsuario()">Buscar cupo y crear perfil</button>
             <button class="btn-main" onclick="mostrarCrear(false)" style="background: var(--card-bg) !important; color: var(--text-dark) !important; border: 1px solid var(--border-light) !important; margin-top: 12px; box-shadow: none;">Volver atrás</button>
             
             <div class="error-text" id="crear-error-msg"></div>
-            <div id="crear-success-msg" style="color: var(--text-green); font-size: 0.95rem; margin-top: 16px; display: none; font-weight: 700; background: #f0fdf4; padding: 16px; border-radius: 16px; border: 1px solid rgba(22, 163, 74, 0.1);"></div>
+            <div id="crear-success-msg" style="color: var(--text-green); font-size: 0.95rem; margin-top: 16px; display: none; font-weight: 700; background: #f0fdf4; padding: 20px; border-radius: 16px; border: 1px solid rgba(22, 163, 74, 0.1); text-align: center;"></div>
         </div>
+        
+        <!-- PANTALLA DE ADMINISTRADOR (GENERADOR DE PIN Y RULETA ELEGIDOS) -->
+        <div id="admin-screen" style="display: none; width: 100%; padding: 40px 24px; text-align: center;">
+            <img src="LOGO CURSO FOTOGRAFIA DIGITAL.png" alt="ELEGIDOS" class="login-logo" style="margin: 0 auto 20px;" onerror="this.style.display='none'">
+            <h1 class="login-title" style="font-size: 2.5rem; text-align: center; margin-bottom: 10px;">Panel Admin ELEGIDOS</h1>
+            <p class="login-subtitle" style="text-align: center; margin-bottom: 30px;">Bienvenido(a), <span id="admin-name" style="font-weight: 900; color: var(--purple-main);">Admin</span></p>
+
+            <!-- TARJETA 1: GENERADOR DE PIN ORIGINAL -->
+            <div class="calendar-card" style="background: white; padding: 30px 20px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-top: 20px; border: 1px solid var(--border-light);">
+                <div style="background: linear-gradient(135deg, #8b5cf6, #ec4899); width: 60px; height: 60px; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; color: white;">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                </div>
+                <h3 style="font-size: 1.2rem; font-weight: 900; margin-bottom: 10px;">Asistencia Virtual (Meet)</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Genera un PIN de 4 dígitos para que los alumnos confirmen su asistencia durante la clase en vivo de hoy.</p>
+                
+                <button onclick="generarPinParaHoy()" class="btn-main" id="btn-generar-pin" style="max-width: 100%; margin: 0 auto;">Generar PIN de Hoy</button>
+                
+                <div id="admin-pin-display" style="display: none; margin-top: 25px;">
+                    <p style="font-size: 0.85rem; font-weight: 800; color: #16a34a; margin-bottom: 8px;">✅ PIN ACTIVO EN FIREBASE:</p>
+                    <div id="pin-number-text" style="font-size: 3.5rem; font-weight: 900; letter-spacing: 12px; color: #0f172a; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 16px; padding: 15px;">
+                        0000
+                    </div>
+                </div>
+            </div>
+
+            <!-- TARJETA 2: SISTEMA AVANZADO DE RULETA -->
+            <div class="calendar-card" style="background: white; padding: 30px 20px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-top: 20px; border: 1px solid var(--border-light);">
+                <div style="background: linear-gradient(135deg, #11001c, #8b00ff); width: 60px; height: 60px; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; color: white;">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+                </div>
+                <h3 style="font-size: 1.2rem; font-weight: 900; margin-bottom: 10px;">Sorteo Dinámico ELEGIDOS</h3>
+                
+                <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 20px; background: #f8fafc; padding: 10px 15px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                    <label style="font-size: 0.95rem; font-weight: 800; color: #0f172a; cursor: pointer;" for="toggle-prueba">Activar Modo Prueba</label>
+                    <input type="checkbox" id="toggle-prueba" onchange="actualizarModoPrueba()" style="width: 22px; height: 22px; accent-color: #8b00ff; cursor: pointer;">
+                </div>
+                <p id="txt-alerta-prueba" style="font-size: 0.75rem; color: #ea580c; font-weight: 700; margin-top: -10px; margin-bottom: 15px; display: none;">⚠️ VISIBLE SOLO PARA ADMIN. NO ENVÍA A FIREBASE.</p>
+
+                <button onclick="iniciarAlgoritmoRuleta()" class="btn-main" id="btn-generar-ruleta" style="max-width: 100%; margin: 0 auto; background: linear-gradient(90deg, #11001c 0%, #5b21b6 50%, #8b00ff 100%) !important; box-shadow: 0 15px 30px rgba(139, 0, 255, 0.3) !important;">Lanzar Ruleta</button>
+            </div>
+
+            <!-- TARJETA 3: ASIGNACIÓN MASIVA DE BOLETOS -->
+            <div class="calendar-card" style="background: white; padding: 30px 20px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-top: 20px; border: 1px solid var(--border-light);">
+                <div style="background: linear-gradient(135deg, #ea580c, #f59e0b); width: 60px; height: 60px; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; color: white;">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                </div>
+                <h3 style="font-size: 1.2rem; font-weight: 900; margin-bottom: 10px;">Asignación Masiva de Boletos</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">Asigna automáticamente un boleto virtual a todos los estudiantes de la base de datos.</p>
+                
+                <select id="select-evento-masivo" class="input-field" style="max-width: 100%; margin-bottom: 15px; padding: 12px; font-size: 0.9rem;">
+                    <option value="">Seleccione el evento...</option>
+                    <option value="elegidos">Evento Elegidos</option>
+                    <option value="masterclass">Masterclass</option>
+                    <option value="festival">Festival Creativo</option>
+                </select>
+
+                <button onclick="asignarBoletosMasivos()" class="btn-main" id="btn-asignar-masivo" style="max-width: 100%; margin: 0 auto; background: linear-gradient(90deg, #ea580c 0%, #f97316 100%) !important; box-shadow: 0 15px 30px rgba(234, 88, 12, 0.3) !important;">Asignar a Todos</button>
+                <p id="msg-asignacion-masiva" style="font-size: 0.85rem; font-weight: 700; margin-top: 15px; display: none;"></p>
+            </div>
+
+            <button onclick="cerrarSesion()" class="btn-main" style="max-width: 100%; margin-top: 30px; background: #ef4444 !important; box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);">Cerrar Sesión</button>
+        </div>
+
+        
+
+        <!-- LÓGICA ESTRUCTURAL DE LA RULETA (VERSIÓN PROFESIONAL) -->
+        <script>
+            let modoPruebaActivo = false;
+            let ruletaGirando = false; // Bloqueo de seguridad para evitar múltiples clics
+            
+            // Simulación Profesional de base de datos para los participantes
+            const listaParticipantes = [
+                "Glenda Flores", "Anthony Lazo", "Andrea Martínez", 
+                "Luis Pérez", "Carlos Gómez", "Mariana Ríos",
+                "José Castillo", "Mónica Ruiz", "Héctor Silva"
+            ];
+
+            function actualizarModoPrueba() {
+                const checkbox = document.getElementById("toggle-prueba");
+                modoPruebaActivo = checkbox.checked;
+                document.getElementById("txt-alerta-prueba").style.display = modoPruebaActivo ? "block" : "none";
+            }
+
+            function iniciarAlgoritmoRuleta() {
+                // Previene que la ruleta se rompa si el admin hace doble clic rápido
+                if (ruletaGirando) return; 
+                
+                const overlay = document.getElementById("ruleta-overlay");
+                const titulo = document.getElementById("ruleta-titulo");
+                const nombreDisplay = document.getElementById("ruleta-nombre-ganador");
+                const btnCerrar = document.getElementById("btn-cerrar-ruleta");
+                
+                // Reset de Interfaz
+                ruletaGirando = true;
+                btnCerrar.style.display = "none";
+                titulo.innerText = modoPruebaActivo ? "PRUEBA: BUSCANDO GANADOR..." : "BUSCANDO GANADOR...";
+                titulo.style.color = "#ff00c8";
+                nombreDisplay.style.animation = "none";
+                overlay.style.display = "flex";
+
+                // Sincronización con Firebase (con bloque try-catch para no dañar el código si Firebase falla)
+                if (!modoPruebaActivo && typeof db !== 'undefined') {
+                    try {
+                        db.ref('sistema/ruleta_estado').set({ activa: true, timestamp: Date.now() }); 
+                    } catch(error) { console.warn("Firebase no está inicializado aún."); }
+                }
+
+                // Motor de Giro Profesional con Easing (requestAnimationFrame corre a 60 FPS)
+                const duracionAnimacion = 4500; // 4.5 segundos de giro
+                const tiempoInicio = performance.now();
+                
+                function animarRuleta(tiempoActual) {
+                    const tiempoTranscurrido = tiempoActual - tiempoInicio;
+                    let progreso = Math.min(tiempoTranscurrido / duracionAnimacion, 1);
+                    
+                    if (progreso < 1) {
+                        // Fórmula Ease-Out Quart para un frenado hiperrealista
+                        const easeOut = 1 - Math.pow(1 - progreso, 4);
+                        
+                        // Generamos un índice rápido que se frena visualmente en concordancia con el easeOut
+                        const velocidadVisual = Math.floor(easeOut * 200); 
+                        const indiceAleatorio = velocidadVisual % listaParticipantes.length;
+                        
+                        nombreDisplay.innerText = listaParticipantes[indiceAleatorio];
+                        requestAnimationFrame(animarRuleta);
+                    } else {
+                        // Selección Finalizada
+                        finalizarSeleccion();
+                    }
+                }
+                
+                // Arrancar el motor de alta precisión
+                requestAnimationFrame(animarRuleta);
+            }
+
+            function finalizarSeleccion() {
+                const titulo = document.getElementById("ruleta-titulo");
+                const nombreDisplay = document.getElementById("ruleta-nombre-ganador");
+                const btnCerrar = document.getElementById("btn-cerrar-ruleta");
+                
+                // Selecciona al ganador absoluto final
+                const indexFinal = Math.floor(Math.random() * listaParticipantes.length);
+                const nombreGanador = listaParticipantes[indexFinal];
+                
+                nombreDisplay.innerText = nombreGanador;
+                nombreDisplay.style.animation = "pulseRuleta 1.5s infinite alternate";
+                titulo.innerText = modoPruebaActivo ? "¡GANADOR DE PRUEBA!" : "¡TENEMOS GANADOR!";
+                titulo.style.color = "#16a34a"; // Verde éxito
+                btnCerrar.style.display = "flex";
+                
+                ruletaGirando = false; // Liberamos el botón para el siguiente uso
+                
+                if (!modoPruebaActivo && typeof db !== 'undefined') {
+                    try {
+                        db.ref('sistema/ruleta_ganador').set({ nombre: nombreGanador, timestamp: Date.now() });
+                    } catch(error) { console.warn("Firebase no está inicializado aún."); }
+                }
+            }
+
+            function cerrarRuleta() {
+                document.getElementById("ruleta-overlay").style.display = "none";
+                document.getElementById("ruleta-titulo").style.color = "#ff00c8"; // Reset al color original
+                
+                // Limpiar pantalla al cerrar
+                document.getElementById("ruleta-nombre-ganador").innerText = "INICIANDO";
+                document.getElementById("ruleta-nombre-ganador").style.animation = "none";
+                
+                if (!modoPruebaActivo && typeof db !== 'undefined') {
+                    try {
+                        db.ref('sistema/ruleta_estado').set({ activa: false });
+                    } catch(error) { console.warn("Firebase no está inicializado aún."); }
+                }
+            }
+        </script>
     </div>
+
+
+    <!-- DASHBOARD -->
 
 
     <!-- DASHBOARD -->
@@ -764,6 +1087,10 @@
             <button class="nav-item" onclick="cambiarSeccion('recursos', 3)">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
                 <span class="nav-txt">Más</span>
+            </button>
+            <button class="nav-item" onclick="cambiarSeccion('perfil', 4)">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <span class="nav-txt">Perfil</span>
             </button>
         </div>
 
@@ -790,6 +1117,20 @@
                         <div style="color: #0b0f19; font-size: 1rem; font-weight: 800; line-height: 1.3;">Notificaciones<br><span style="color: #4b5563; font-size: 0.85rem; font-weight: 700;">Ver anuncios recientes</span></div>
                     </div>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+
+                <!-- BANNER BOTÓN RULETA EN VIVO (CATEDRÁTICO O ADMIN ACTIVA) -->
+                <div id="banner-ruleta-live" onclick="abrirRuletaPantallaCompleta()" style="display: none; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #8b00ff 0%, #ff00c8 100%); border: 1px solid rgba(255, 255, 255, 0.5); padding: 20px 24px; border-radius: 24px; margin-top: 15px; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 30px rgba(255, 0, 200, 0.35); animation: pulseRuleta 2s infinite;">
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <div style="width: 48px; height: 48px; border-radius: 50%; background: #ffffff; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 15px rgba(0,0,0,0.2); flex-shrink: 0; font-size: 1.5rem;">
+                            🎡
+                        </div>
+                        <div style="color: #ffffff; font-size: 1rem; font-weight: 800; line-height: 1.3;">
+                            Ruleta en Vivo<br>
+                            <span id="txt-banner-ruleta" style="color: #fbcfe8; font-size: 0.85rem; font-weight: 700;">¡Sorteo activo! Haz clic para abrir</span>
+                        </div>
+                    </div>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </div>
             </div>
 
@@ -832,7 +1173,7 @@
                     <div id="meet-banner-container" style="display: none; background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 16px; padding: 20px; margin-bottom: 24px; text-align: center;">
                         <h4 style="color: var(--purple-main); font-weight: 800; font-size: 1.1rem; margin-bottom: 5px;">🎥 Clase en Vivo Activa</h4>
                         <p style="font-size: 0.85rem; color: #4338ca; margin-bottom: 15px;">La sala de Google Meet está abierta.</p>
-                        <a href="https://meet.google.com/wvh-nhwv-uga" target="_blank" style="background: var(--purple-main); color: #fff; padding: 12px 24px; border-radius: 12px; font-weight: 800; text-decoration: none; display: inline-block; box-shadow: 0 4px 10px rgba(147, 51, 234, 0.3);">Unirse a la Clase</a>
+                        <a href="#" onclick="registrarIngresoMeet('https://meet.google.com/wvh-nhwv-uga'); return false;" style="background: var(--purple-main); color: #fff; padding: 12px 24px; border-radius: 12px; font-weight: 800; text-decoration: none; display: inline-block; box-shadow: 0 4px 10px rgba(147, 51, 234, 0.3);">Unirse a la Clase</a>
                     </div>
 
                     <script>
@@ -863,6 +1204,24 @@
                         }
                     </script>
 
+                                           
+
+                    <!-- TARJETA/PESTAÑA: MIS CALIFICACIONES Y ASISTENCIAS -->
+                    <!-- TARJETA/PESTAÑA: MIS CALIFICACIONES Y ASISTENCIAS -->
+                    <div class="promo-card" onclick="abrirMisCalificaciones()" style="display: flex; align-items: center; justify-content: space-between; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.15); padding: 20px 24px; border-radius: 24px; margin-bottom: 24px; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #8b5cf6, #ec4899); display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 15px rgba(139, 92, 246, 0.35); flex-shrink: 0; font-size: 1.4rem;">
+                                📊
+                            </div>
+                            <div style="color: #ffffff; font-size: 1rem; font-weight: 800; line-height: 1.3;">
+                                Mis Calificaciones y Asistencias<br>
+                                <span style="color: #94a3b8; font-size: 0.85rem; font-weight: 600;">Toca para ver rendimiento del cuatrimestre</span>
+                            </div>
+                        </div>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </div>
+
+                    <!-- HISTORIAL DE CLASES ORIGINAL RESTAURADO -->
                     <div class="section-header">
                         <div style="display: flex; align-items: center; gap: 14px;">
                             <div style="width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg, #6366f1, #8b5cf6); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
@@ -878,26 +1237,42 @@
 
 <!-- VISTA NUEVA: BOLETOS ESPECIALES -->
                 <div id="tab-boletos" class="tab-content">
-                    <div class="section-header">Mis Boletos Oficiales</div>
-                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Vincula los códigos de tus entradas físicas para validarlas digitalmente.</p>
                     
-                    <div class="calendar-card" style="margin-top: 0; padding: 20px;">
-                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px; text-align: center;">Escanea el código QR de tu entrada física.</p>
+                    <!-- SECCIÓN 1: BOLETOS VIRTUALES ASIGNADOS POR ADMIN -->
+                    <div style="margin-top: 10px; margin-bottom: 40px;">
+                        <div class="section-header" style="font-size: 1.4rem; color: var(--purple-main);">✨ Boletos Virtuales</div>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Entradas digitales que la academia te ha regalado o asignado directamente.</p>
                         
-                        <!-- Contenedor de la cámara para tickets -->
-                        <div id="qr-reader-boletos" style="width: 100%; border-radius: 16px; overflow: hidden; margin-bottom: 15px; display: none;"></div>
-                        
-                        <button class="btn-main" id="btn-abrir-escaner-boletos" onclick="abrirEscanerBoletos()" style="max-width: 100%; padding: 14px; font-size: 0.9rem; margin-bottom: 12px; background: #ea580c;">📷 Escanear Boleto Físico</button>
-                        
-                        <input type="text" id="input-boleto" class="input-field" placeholder="O ingresa el código aquí" style="display: none; max-width: 100%; margin-bottom: 12px; padding: 14px; font-size: 0.9rem; text-transform: uppercase; text-align: center;">
-<button class="btn-main" id="btn-vincular-boleto" style="display: none; max-width: 100%; padding: 14px; font-size: 0.9rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);" onclick="vincularBoleto()">Vincular Manualmente</button>
+                        <div id="contenedor-boletos-virtuales">
+                            <!-- Aquí aparecerán los boletos enviados por el ADMIN -->
+                        </div>
                     </div>
 
-                    <div id="contenedor-boletos" style="margin-top: 24px;">
-                        <!-- Aquí se inyectarán los boletos vinculados -->
+                    <hr style="border: none; border-top: 2px dashed #e2e8f0; margin: 30px 0;">
+
+                    <!-- SECCIÓN 2: BOLETOS FÍSICOS ESCANEADOS -->
+                    <div>
+                        <div class="section-header" style="font-size: 1.4rem;">📷 Mis Boletos Físicos</div>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Vincula los códigos de tus entradas físicas de papel para validarlas digitalmente.</p>
+                        
+                        <div class="calendar-card" style="margin-top: 0; padding: 20px; border: 1px solid #e2e8f0;">
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px; text-align: center;">Escanea el código QR de tu entrada física.</p>
+                            
+                            <!-- Contenedor de la cámara para tickets -->
+                            <div id="qr-reader-boletos" style="width: 100%; border-radius: 16px; overflow: hidden; margin-bottom: 15px; display: none;"></div>
+                            
+                            <button class="btn-main" id="btn-abrir-escaner-boletos" onclick="abrirEscanerBoletos()" style="max-width: 100%; padding: 14px; font-size: 0.9rem; margin-bottom: 12px; background: #ea580c !important;">📷 Escanear Boleto Físico</button>
+                            
+                            <input type="text" id="input-boleto" class="input-field" placeholder="O ingresa el código manual aquí" style="display: block; max-width: 100%; margin-bottom: 12px; padding: 14px; font-size: 0.9rem; text-transform: uppercase; text-align: center;">
+                            <button class="btn-main" id="btn-vincular-boleto" style="display: block; max-width: 100%; padding: 14px; font-size: 0.9rem; background: #f1f5f9 !important; color: #000 !important; border: 1px solid #cbd5e1 !important; box-shadow: none;" onclick="vincularBoleto()">Vincular Manualmente</button>
+                        </div>
+
+                        <div id="contenedor-boletos" style="margin-top: 24px;">
+                            <!-- Aquí se inyectarán los boletos físicos escaneados -->
+                        </div>
                     </div>
+
                 </div>
-
                 <!-- VISTA 2: QR -->
                 <div id="tab-qr" class="tab-content">
                     <div class="qr-section">
@@ -942,7 +1317,7 @@
                     </div>
                 </div>
 
-               <!-- VISTA 5: RECURSOS Y PERFIL -->
+               <!-- VISTA 5: RECURSOS (MÁS) -->
                 <div id="tab-recursos" class="tab-content">
                     
                     <!-- SECCIÓN PERMISOS DIGITALES -->
@@ -956,55 +1331,15 @@
                         </div>
                     </div>
                     <div class="calendar-card" style="margin-top: 0; padding: 20px; border-color: rgba(234, 88, 12, 0.3);">
-                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 15px;">¿No podrás asistir? Envía tu justificante. Se registrará automáticamente en tu historial como permiso.</p>
-                        
                         <select id="permiso-fecha" class="input-field" style="max-width: 100%; margin-bottom: 12px; padding: 14px; font-size: 0.9rem; appearance: auto;">
                             <option value="">Selecciona la clase a faltar...</option>
                         </select>
-                        
                         <textarea id="permiso-razon" class="input-field" placeholder="Motivo de la inasistencia (Ej: Enfermedad, Trabajo...)" style="max-width: 100%; margin-bottom: 12px; padding: 14px; font-size: 0.9rem; resize: none; height: 80px;"></textarea>
-                        
                         <div style="text-align: center; margin-bottom: 15px;">
                             <p style="font-size: 0.8rem; color: var(--text-dark); margin-bottom: 8px; font-weight: 600;">Adjuntar Justificante (Opcional)</p>
-                            <input type="file" id="permiso-foto" accept="image/*" class="input-field" style="max-width: 100%; padding: 8px; font-size: 0.8rem; background: rgba(0,0,0,0.2); border: none; margin-bottom: 5px;">
+                            <input type="file" id="permiso-foto" accept="image/*" class="input-field" style="max-width: 100%; padding: 8px; font-size: 0.8rem; background: rgba(0,0,0,0.05); border: none; margin-bottom: 5px;">
                         </div>
-
                         <button class="btn-main" id="btn-enviar-permiso" style="max-width: 100%; padding: 14px; font-size: 0.9rem; background: linear-gradient(90deg, #0a0a0a 0%, #6b21a8 45%, #ec4899 75%, #ff6a00 100%); box-shadow: 0 4px 15px rgba(139, 0, 255, 0.3);" onclick="enviarPermiso()">Enviar Solicitud</button>
-                    </div>
-
-                    <div class="section-header">👤 Mi Perfil ELEGIDOS</div>
-                    <div class="calendar-card" style="margin-top: 0; padding: 20px;">
-                        
-                        <!-- Personalizar Banner -->
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
-                            <span style="font-size: 0.8rem; font-weight: 600; color: #e2e8f0;">Color del Banner Principal:</span>
-                            <input type="color" id="perfil-color" value="#9333ea" style="border: none; width: 40px; height: 30px; border-radius: 5px; cursor: pointer; background: transparent; padding: 0;">
-                        </div>
-
-                        <div style="text-align: center; margin-bottom: 15px;">
-                            <div id="preview-foto" style="width: 80px; height: 80px; border-radius: 50%; background: rgba(255,255,255,0.1); margin: 0 auto 10px auto; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 2px solid var(--purple-main);">
-                                <img id="img-preview" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
-                                <span id="img-placeholder" style="color: #94a3b8; font-size: 0.75rem;">Sin foto</span>
-                            </div>
-                            <div id="box-subir-foto">
-                                <input type="file" id="perfil-foto" accept="image/*" class="input-field" style="max-width: 100%; padding: 8px; font-size: 0.8rem; background: rgba(0,0,0,0.2); border: none; margin-bottom: 5px;">
-                                <p style="font-size: 0.7rem; color: #f87171; margin-top: 0; font-weight: bold;">⚠️ ATENCIÓN: La foto que subas será definitiva para todo el curso y no podrás cambiarla.</p>
-                            </div>
-                        </div>
-                        
-                        <!-- CAMPOS DE TEXTO RECUPERADOS -->
-                        <input type="number" id="perfil-edad" class="input-field" placeholder="Tu edad (Ej: 22)" style="max-width: 100%; margin-bottom: 12px; padding: 14px; font-size: 0.9rem;">
-                        <input type="text" id="perfil-comunidad" class="input-field" placeholder="Comunidad / Zona donde vives" style="max-width: 100%; margin-bottom: 12px; padding: 14px; font-size: 0.9rem;">
-                        <select id="perfil-nivel" class="input-field" style="max-width: 100%; margin-bottom: 12px; padding: 14px; font-size: 0.9rem; appearance: auto;">
-                            <option value="">Selecciona tu nivel en fotografía</option>
-                            <option value="Básico">Básico</option>
-                            <option value="Intermedio">Intermedio</option>
-                            <option value="Avanzado">Avanzado</option>
-                        </select>
-                        <textarea id="perfil-desc" class="input-field" placeholder="Una descripción corta de ti..." style="max-width: 100%; margin-bottom: 12px; padding: 14px; font-size: 0.9rem; resize: none; height: 80px;"></textarea>
-
-                        <button class="btn-main" id="btn-guardar-perfil" style="max-width: 100%; padding: 14px; font-size: 0.9rem;" onclick="guardarPerfil()">Guardar Perfil</button>
-                        <div id="perfil-msg" style="font-size: 0.8rem; margin-top: 12px; text-align: center; color: #fbbf24;"></div>
                     </div>
 
                     <div class="section-header">📞 Soporte Directo</div>
@@ -1014,7 +1349,7 @@
                     <div class="class-list" style="display: block; margin-bottom: 30px;">
                         <div class="class-item" style="border-left: 4px solid var(--purple-main);">
                             <div class="class-info"><h5>Sitio Web ELEGIDOS</h5><p>Plataforma y portafolios</p></div>
-                            <a href="https://elegidosori.vercel.app/?utm_source=ig&utm_medium=social&utm_content=link_in_bio&fbclid=PAcGRvZgJleHRuA2FlbQIxMQBzcnRjBmFwcF9pZA85MzY2MTk3NDMzOTI0NTkAAacFQP-0RBBTqkr3Fe58wps9-TZQYVZ9O-UXuRHzqZJLu5nYd3XLKFVhoYITvg_aem_MQAULY9OAtbQlzeqHceovw" target="_blank" style="background: var(--purple-light); color: var(--purple-main); padding: 10px 16px; border-radius: 12px; font-size: 0.8rem; font-weight: 800; text-decoration: none;">Visitar</a>
+                            <a href="https://elegidosori.vercel.app/" target="_blank" style="background: var(--pastel-purple); color: var(--purple-main); padding: 10px 16px; border-radius: 12px; font-size: 0.8rem; font-weight: 800; text-decoration: none;">Visitar</a>
                         </div>
                     </div>
 
@@ -1024,10 +1359,78 @@
                     </div>
                 </div>
 
+                <!-- VISTA 6: PERFIL PROFESIONAL (ESTILO DARK UI) -->
+                <div id="tab-perfil" class="tab-content" style="background: #09090b; padding: 30px 20px; border-radius: 32px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1); border: 1px solid #27272a; position: relative; overflow: hidden;">
+                    
+                    <!-- Glow effects de fondo -->
+                    <div style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: var(--purple-main); filter: blur(80px); opacity: 0.4; border-radius: 50%; pointer-events: none;"></div>
+                    <div style="position: absolute; bottom: -50px; left: -50px; width: 150px; height: 150px; background: #ec4899; filter: blur(80px); opacity: 0.3; border-radius: 50%; pointer-events: none;"></div>
+
+                    <div class="section-header" style="color: #ffffff; margin-bottom: 30px; position: relative; z-index: 2;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="background: linear-gradient(135deg, #a855f7, #6366f1); padding: 8px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                            </div>
+                            <span>Mi Perfil ELEGIDOS</span>
+                        </div>
+                    </div>
+                    
+                    <div style="position: relative; z-index: 2;">
+                        <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 24px; padding: 25px; margin-bottom: 25px; backdrop-filter: blur(10px);">
+                            
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
+                                <span style="font-size: 0.9rem; font-weight: 600; color: #a1a1aa;">Color del Portal:</span>
+                                <div style="position: relative; width: 40px; height: 40px; border-radius: 10px; overflow: hidden; border: 2px solid rgba(255,255,255,0.1); cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+                                    <input type="color" id="perfil-color" value="#8b00ff" style="position: absolute; top: -10px; left: -10px; width: 60px; height: 60px; border: none; cursor: pointer; background: transparent; padding: 0;">
+                                </div>
+                            </div>
+
+                            <div style="text-align: center; margin-bottom: 10px;">
+                                <div style="position: relative; display: inline-block;">
+                                    <div id="preview-foto" style="width: 110px; height: 110px; border-radius: 50%; background: #18181b; margin: 0 auto 20px auto; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 3px solid transparent; background-clip: padding-box; position: relative; z-index: 2; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+                                        <img id="img-preview" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                                        <span id="img-placeholder" style="color: #71717a; font-size: 0.85rem; font-weight: 600;">Sin foto</span>
+                                    </div>
+                                    <div style="position: absolute; top: -3px; right: -3px; bottom: -3px; left: -3px; z-index: 1; border-radius: 50%; background: linear-gradient(135deg, #a855f7, #ec4899, #3b82f6); animation: rotate 4s linear infinite; margin: 0 auto 20px auto; width: 116px; height: 116px;"></div>
+                                </div>
+                                
+                                <div id="box-subir-foto" style="background: rgba(0,0,0,0.2); border-radius: 16px; padding: 15px; border: 1px dashed rgba(255,255,255,0.1);">
+                                    <input type="file" id="perfil-foto" accept="image/*" style="width: 100%; font-size: 0.85rem; color: #a1a1aa; file-selector-button: font-weight: bold; file-selector-button: border-radius: 8px; file-selector-button: border: none; file-selector-button: background: #27272a; file-selector-button: color: #fff; file-selector-button: padding: 8px 12px; file-selector-button: cursor: pointer;">
+                                    <p style="font-size: 0.75rem; color: #fbbf24; margin-top: 10px; font-weight: 700; background: rgba(245, 158, 11, 0.1); padding: 8px; border-radius: 8px;">⚠️ ATENCIÓN: La foto será definitiva.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Box Oscura: Campos de Texto -->
+                        <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 24px; padding: 25px; margin-bottom: 25px; backdrop-filter: blur(10px);">
+                            <label style="color: #a1a1aa; font-size: 0.8rem; font-weight: 600; margin-bottom: 6px; display: block;">Edad</label>
+                            <input type="number" id="perfil-edad" placeholder="Ej: 22" style="width: 100%; margin-bottom: 16px; padding: 16px; font-size: 1rem; border-radius: 12px; border: 1px solid #27272a; background: #18181b; color: #f4f4f5; outline: none; transition: 0.3s;">
+                            
+                            <label style="color: #a1a1aa; font-size: 0.8rem; font-weight: 600; margin-bottom: 6px; display: block;">Comunidad / Zona</label>
+                            <input type="text" id="perfil-comunidad" placeholder="Ej: Santa Ana" style="width: 100%; margin-bottom: 16px; padding: 16px; font-size: 1rem; border-radius: 12px; border: 1px solid #27272a; background: #18181b; color: #f4f4f5; outline: none; transition: 0.3s;">
+                            
+                            <label style="color: #a1a1aa; font-size: 0.8rem; font-weight: 600; margin-bottom: 6px; display: block;">Nivel en Fotografía</label>
+                            <select id="perfil-nivel" style="width: 100%; margin-bottom: 16px; padding: 16px; font-size: 1rem; border-radius: 12px; border: 1px solid #27272a; background: #18181b; color: #f4f4f5; appearance: auto; outline: none;">
+                                <option value="" style="color: #a1a1aa;">Selecciona tu nivel</option>
+                                <option value="Básico">Básico</option>
+                                <option value="Intermedio">Intermedio</option>
+                                <option value="Avanzado">Avanzado</option>
+                            </select>
+                            
+                            <label style="color: #a1a1aa; font-size: 0.8rem; font-weight: 600; margin-bottom: 6px; display: block;">Sobre ti</label>
+                            <textarea id="perfil-desc" placeholder="Una descripción corta..." style="width: 100%; margin-bottom: 0; padding: 16px; font-size: 1rem; resize: none; height: 100px; border-radius: 12px; border: 1px solid #27272a; background: #18181b; color: #f4f4f5; outline: none; transition: 0.3s;"></textarea>
+                        </div>
+
+                        <button class="btn-main" id="btn-guardar-perfil" style="width: 100%; padding: 18px; font-size: 1.05rem; background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%) !important; color: #fff !important; box-shadow: 0 10px 25px rgba(168, 85, 247, 0.4); text-transform: uppercase; letter-spacing: 1px; border-radius: 100px; border: none; font-weight: 900; cursor: pointer; transition: 0.3s;" onclick="guardarPerfil()">💾 Guardar Perfil</button>
+                        <div id="perfil-msg" style="font-size: 0.85rem; margin-top: 15px; text-align: center; color: #34d399; font-weight: 600;"></div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
 </div>
+<style>@keyframes rotate { 100% { transform: rotate(360deg); } }</style>
 
 <script>
     if(window.innerWidth > 768){
@@ -1058,22 +1461,21 @@
                 
                 if (codigoActual && !antenaActiva) {
                     antenaActiva = true;
-                    // Ruta donde se registrará la actividad del estudiante
-                    const refPresencia = db.ref('/estudiantes_online/' + codigoActual);
+                   // Crear un ID de sesión único (si entras en dos dispositivos, son dos sesiones distintas)
+                    const sessionID = Math.random().toString(36).substring(2, 10);
+                    // Ruta individual por sesión
+                    const refPresencia = db.ref('/estudiantes_online/' + codigoActual + '/' + sessionID);
                     
                     // Conexión con el sistema nativo de presencia de Firebase
                     db.ref('.info/connected').on('value', function(snapshot) {
                         if (snapshot.val() === false) return;
                         
-                        // OnDisconnect: Si el usuario cierra la pestaña o pierde internet, Firebase lo marca offline automáticamente
-                        refPresencia.onDisconnect().set({
-                            estado: 'offline',
-                            ultima_desconexion: firebase.database.ServerValue.TIMESTAMP
-                        }).then(() => {
-                            // Si está conectado y navegando
+                        // Si el usuario cierra la pestaña, remueve la sesión. (No pone a offline a toda la cuenta, solo a este dispositivo).
+                        refPresencia.onDisconnect().remove().then(() => {
+                            // Si está conectado, inyectar datos de sesión activa
                             refPresencia.set({
                                 estado: 'online',
-                                ultima_conexion: firebase.database.ServerValue.TIMESTAMP
+                                inicio_sesion: firebase.database.ServerValue.TIMESTAMP
                             });
                         });
                     });
@@ -1125,7 +1527,8 @@
 
     let datosEstudianteActual = null;
     let esInvitado = false;
-    let fotoPerfilBase64 = null;;
+    let fotoPerfilBase64 = null;
+    let fotoPermisoBase64 = null;
 
     function formatearFecha(fechaString) {
         const opciones = { weekday: 'short', day: 'numeric', month: 'short' };
@@ -1149,13 +1552,22 @@ function mostrarRecuperacion(mostrar) {
 
     function procesarCrearUsuario() {
         const nombre = document.getElementById("crear-nombre").value.trim();
+        const correo = document.getElementById("crear-correo").value.trim();
         const clave = document.getElementById("crear-clave").value.trim();
         const errorMsg = document.getElementById("crear-error-msg");
         const successMsg = document.getElementById("crear-success-msg");
         const btn = document.getElementById("btn-crear-usuario");
 
-        if (!nombre || clave.length < 4) {
-            errorMsg.innerText = "Ingresa tu nombre y una contraseña de al menos 4 caracteres.";
+        if (!nombre || !correo || clave.length < 4) {
+            errorMsg.innerText = "Ingresa tu nombre, tu correo y una contraseña de al menos 4 caracteres.";
+            errorMsg.style.display = "block";
+            return;
+        }
+        
+        // Validación básica de correo
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(correo)) {
+            errorMsg.innerText = "Por favor, ingresa un correo electrónico válido.";
             errorMsg.style.display = "block";
             return;
         }
@@ -1195,10 +1607,11 @@ function mostrarRecuperacion(mostrar) {
             // Guardar al nuevo estudiante
             db.ref('clase/' + codigoAsignar).update({
                 nombre: nombre,
+                correo: correo,
                 password: clave,
                 fecha_creacion: new Date().toISOString()
             }).then(() => {
-                successMsg.innerHTML = `¡Éxito! Tu código es:<br><span style="font-size:1.4rem; color:#15803d; display:block; margin:8px 0;">${codigoAsignar}</span>¡Tómale captura, lo necesitarás para entrar!<br>Iniciando sesión en 5 segundos...`;
+                successMsg.innerHTML = `<span style="font-size:1.1rem; color:#15803d; font-weight:900;">¡CREACIÓN EXITOSA!</span><br><br><span style="font-size:0.9rem; color:#475569;">Tu CÓDIGO ÚNICO de estudiante es:</span><br><div style="font-size:2.2rem; font-weight:900; color:#16a34a; background:#dcfce7; padding:15px; border-radius:12px; margin:15px 0; border:2px dashed #15803d; letter-spacing:1px;">${codigoAsignar}</div><span style="font-size:0.85rem; color:#ea580c; font-weight:800;">⚠️ TÓMALE UNA CAPTURA AHORA MISM0 ⚠️<br>Lo necesitarás SIEMPRE para ingresar.</span><br><br><span style="font-size:0.8rem; color:#64748b;">Iniciando sesión automáticamente en 8 segundos...</span>`;
                 successMsg.style.display = "block";
                 btn.style.display = "none";
                 
@@ -1212,9 +1625,10 @@ function mostrarRecuperacion(mostrar) {
                     btn.disabled = false;
                     btn.innerText = "Buscar cupo y crear perfil";
                     document.getElementById("crear-nombre").value = "";
+                    document.getElementById("crear-correo").value = "";
                     document.getElementById("crear-clave").value = "";
                     iniciarSesion();
-                }, 5000);
+                }, 8000);
             });
         }).catch((error) => {
             errorMsg.innerText = "Error de conexión. Intenta de nuevo.";
@@ -1224,21 +1638,21 @@ function mostrarRecuperacion(mostrar) {
         });
     }
 
-    // Event listener para detectar cuando ingresan el código y mostrar u ocultar el campo de "Contraseña Antigua"
+    // Event listener para detectar cuando ingresan el código y mostrar el campo de correo para recuperación
     document.getElementById("rec-codigo").addEventListener("blur", function() {
         const codigo = this.value.trim().toUpperCase();
         if(codigo.startsWith("CLASE-2026-")) {
              db.ref('clase/' + codigo).once('value').then((snapshot) => {
                  if(snapshot.exists()){
                      const data = snapshot.val();
-                     const contraseñaActualDB = data.password;
-                     const containerAntigua = document.getElementById("rec-antigua-container");
+                     const correoVinculadoDB = data.correo;
+                     const containerCorreo = document.getElementById("rec-correo-container");
                      
-                     // Mostrar campo de contraseña antigua si ya la han cambiado
-                     if(contraseñaActualDB && contraseñaActualDB !== CLAVE_UNIVERSAL){
-                          containerAntigua.style.display = "flex";
+                     // Mostrar campo de correo si el usuario tiene uno vinculado
+                     if(correoVinculadoDB){
+                          containerCorreo.style.display = "flex";
                      } else {
-                          containerAntigua.style.display = "none";
+                          containerCorreo.style.display = "none";
                      }
                  }
              });
@@ -1247,10 +1661,10 @@ function mostrarRecuperacion(mostrar) {
 
     function procesarCambioPassword() {
         const codigo = document.getElementById("rec-codigo").value.trim().toUpperCase();
-        const passAntigua = document.getElementById("rec-antigua").value.trim();
+        const correoIngresado = document.getElementById("rec-correo").value.trim().toLowerCase();
         const nuevaPass = document.getElementById("rec-nueva").value.trim();
         const errorMsg = document.getElementById("rec-error-msg");
-        const containerAntigua = document.getElementById("rec-antigua-container");
+        const containerCorreo = document.getElementById("rec-correo-container");
 
         if (!codigo || nuevaPass.length < 4) {
             errorMsg.innerText = "El código es obligatorio y la nueva contraseña debe tener al menos 4 caracteres.";
@@ -1260,29 +1674,29 @@ function mostrarRecuperacion(mostrar) {
         db.ref('clase/' + codigo).once('value').then((snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.val();
-                const contraseñaActualDB = data.password;
+                const correoActualDB = data.correo ? data.correo.toLowerCase() : null;
 
-                // Si nunca han cambiado la clave o es la universal
-                if (!contraseñaActualDB || contraseñaActualDB === CLAVE_UNIVERSAL) {
-                    if (confirm(`¿Confirmas que deseas establecer "${nuevaPass}" como tu nueva contraseña?`)) {
-                        guardarNuevaContraseña(codigo, nuevaPass);
-                    }
-                } else {
-                    // Si ya tenían clave, validamos la antigua
-                    if(containerAntigua.style.display === "none"){
-                        containerAntigua.style.display = "flex";
-                        errorMsg.innerText = "Por favor ingresa tu contraseña actual para confirmar el cambio.";
+                // Si la cuenta tiene correo vinculado
+                if (correoActualDB) {
+                    if (containerCorreo.style.display === "none") {
+                        containerCorreo.style.display = "flex";
+                        errorMsg.innerText = "Por favor ingresa tu correo vinculado para confirmar el cambio.";
                         errorMsg.style.display = "block";
                         return;
                     }
                     
-                    if (passAntigua !== contraseñaActualDB) {
-                        errorMsg.innerText = "❌ La contraseña actual ingresada es incorrecta.";
+                    if (correoIngresado !== correoActualDB) {
+                        errorMsg.innerText = "❌ El correo ingresado no coincide con el vinculado a la cuenta.";
                         errorMsg.style.display = "block";
                         return;
                     }
 
                     if (confirm(`¿Confirmas que deseas cambiar tu contraseña a "${nuevaPass}"?`)) {
+                        guardarNuevaContraseña(codigo, nuevaPass);
+                    }
+                } else {
+                    // Si no tenía correo vinculado, permite el cambio libre pero notifica
+                    if (confirm(`Tu cuenta no tiene correo vinculado. ¿Confirmas que deseas cambiar tu contraseña a "${nuevaPass}"?`)) {
                         guardarNuevaContraseña(codigo, nuevaPass);
                     }
                 }
@@ -1303,7 +1717,8 @@ function mostrarRecuperacion(mostrar) {
             document.getElementById("input-clave").value = nuevaPass;
             
             document.getElementById("rec-codigo").value = "";
-            document.getElementById("rec-antigua").value = "";
+            const elCorreo = document.getElementById("rec-correo");
+            if(elCorreo) elCorreo.value = "";
             document.getElementById("rec-nueva").value = "";
             
             mostrarRecuperacion(false);
@@ -1311,9 +1726,17 @@ function mostrarRecuperacion(mostrar) {
     }
 
     function iniciarSesion() {
+        if (!navigator.onLine) {
+            const errorMsg = document.getElementById("error-msg");
+            errorMsg.innerText = "📡 Estás desconectado. Verifica tu conexión a internet e intenta de nuevo.";
+            errorMsg.style.display = "block";
+            return;
+        }
+
         let codigoInput = document.getElementById("input-codigo").value.trim().toUpperCase();
         const claveInput = document.getElementById("input-clave").value.trim();
         const errorMsg = document.getElementById("error-msg");
+        const btn = document.querySelector('#login-form .btn-main');
 
         if (!codigoInput || !claveInput) {
             errorMsg.innerText = "Por favor, ingresa tu código y contraseña.";
@@ -1321,91 +1744,161 @@ function mostrarRecuperacion(mostrar) {
             return;
         }
 
-        // --- AUTO-COMPLETAR CÓDIGO CON LOS 3 ÚLTIMOS NÚMEROS ---
         if (/^\d{1,3}$/.test(codigoInput)) {
             codigoInput = "CLASE-2026-" + codigoInput.padStart(3, '0');
         }
 
-        // Lógica exclusiva para perfiles de directores
-        if (codigoInput === "ADMIN-GLENDA" || codigoInput === "ADMIN-ROGER") {
-            if (claveInput === "ELEGIDOS26") {
-                document.getElementById("login-screen").style.display = "none";
-                const adminScreen = document.getElementById("admin-screen");
-                if (adminScreen) adminScreen.style.display = "block";
-                const adminName = document.getElementById("admin-name");
-                if (adminName) adminName.innerText = codigoInput === "ADMIN-GLENDA" ? "Glenda Flores" : "Roger Mendez";
-                if (typeof iniciarMonitoreoEnVivo === 'function') iniciarMonitoreoEnVivo();
-                return;
-            } else {
-                errorMsg.innerText = "Contraseña de administrador incorrecta.";
+       if (codigoInput.startsWith("ADMIN-")) {
+            // Verificación silenciosa en Firebase de perfiles Administradores
+            db.ref('administradores/' + codigoInput).once('value').then(snapAdmin => {
+                let esAdminValido = false;
+                let nombreAdmin = codigoInput === "ADMIN-GLENDA" ? "Glenda Flores" : (codigoInput === "ADMIN-ROGER" ? "Roger Mendez" : "Administrador");
+
+                if (snapAdmin.exists()) {
+                    const dataAdmin = snapAdmin.val();
+                    if (dataAdmin.password === claveInput || claveInput === CLAVE_UNIVERSAL) {
+                        esAdminValido = true;
+                        if (dataAdmin.nombre) nombreAdmin = dataAdmin.nombre;
+                    }
+                } else if ((codigoInput === "ADMIN-GLENDA" || codigoInput === "ADMIN-ROGER") && claveInput === "ELEGIDOS26") {
+                    esAdminValido = true;
+                }
+
+                if (esAdminValido) {
+                    localStorage.setItem("elegidos_student_code", codigoInput);
+                    localStorage.setItem("elegidos_is_admin", "true");
+                    
+                    // Inicia sesión cargando la interfaz estética de estudiante
+                    datosEstudianteActual = { nombre: nombreAdmin, asistencias: {}, boletos: {} };
+                    cargarDashboard(codigoInput, datosEstudianteActual);
+                    
+                    if (btn) { btn.disabled = false; btn.innerText = "Acceder a mi perfil"; }
+                } else {
+                    errorMsg.innerText = "Contraseña de administrador incorrecta.";
+                    errorMsg.style.display = "block";
+                    if (btn) { btn.disabled = false; btn.innerText = "Acceder a mi perfil"; }
+                }
+            }).catch(err => {
+                errorMsg.innerText = "Error de red al verificar administrador.";
                 errorMsg.style.display = "block";
-                return;
-            }
+                if (btn) { btn.disabled = false; btn.innerText = "Acceder a mi perfil"; }
+            });
+            return;
         }
 
-        // Lógica para ESTUDIANTES
         errorMsg.style.display = "none";
-        const btn = document.querySelector('#login-form .btn-main');
-        if(btn) btn.innerText = "Verificando...";
+        
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = "⏳ Verificando credenciales...";
+        }
 
         db.ref('clase/' + codigoInput).once('value').then((snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.val();
                 if (data.password === claveInput || claveInput === CLAVE_UNIVERSAL) {
                     localStorage.setItem("elegidos_student_code", codigoInput);
+                    localStorage.setItem("elegidos_session_timestamp", Date.now()); 
+                    localStorage.setItem("elegidos_cache_" + codigoInput, JSON.stringify(data));
+localStorage.removeItem("elegidos_is_admin");
+
                     datosEstudianteActual = data;
                     cargarDashboard(codigoInput, data);
-                    if(btn) btn.innerText = "Acceder a mi perfil";
+                    if(btn) { btn.disabled = false; btn.innerText = "Acceder a mi perfil"; }
                 } else {
                     errorMsg.innerText = "Contraseña incorrecta.";
                     errorMsg.style.display = "block";
-                    if(btn) btn.innerText = "Acceder a mi perfil";
+                    if(btn) { btn.disabled = false; btn.innerText = "Acceder a mi perfil"; }
                 }
             } else {
                 errorMsg.innerText = "El código ingresado no existe.";
                 errorMsg.style.display = "block";
-                if(btn) btn.innerText = "Acceder a mi perfil";
+                if(btn) { btn.disabled = false; btn.innerText = "Acceder a mi perfil"; }
             }
         }).catch((error) => {
-            errorMsg.innerText = "Error de conexión. Intenta de nuevo.";
+            errorMsg.innerText = "❌ Fallo de red al conectar con la base de datos.";
             errorMsg.style.display = "block";
-            if(btn) btn.innerText = "Acceder a mi perfil";
+            if(btn) { btn.disabled = false; btn.innerText = "Acceder a mi perfil"; }
         });
     }
 
+    // --- MOTOR DE SIMULACIÓN DE FECHA PARA MODO PRUEBA / ADMIN ---
+    function obtenerFechaSistema() {
+        const fechaSim = localStorage.getItem("fecha_simulada_admin");
+        if (fechaSim) {
+            return new Date(fechaSim);
+        }
+        return new Date(new Date().toLocaleString("en-US", {timeZone: "America/El_Salvador"}));
+    }
+
+    function cambiarFechaSimulada(nuevaFechaStr) {
+        if (!nuevaFechaStr) {
+            localStorage.removeItem("fecha_simulada_admin");
+        } else {
+            localStorage.setItem("fecha_simulada_admin", nuevaFechaStr.includes("T") ? nuevaFechaStr : nuevaFechaStr + "T12:00:00");
+        }
+        window.location.reload();
+    }
+
+    let presencialConectada = false;
     function cargarDashboard(codigo, data) {
         document.getElementById("login-screen").style.display = "none";
         document.getElementById("dashboard-screen").classList.add("show");
-// --- CONEXIÓN DE ESTADO ONLINE EN TIEMPO REAL ---
-    const codigoAlumno = codigo; // Toma dinámicamente el código del estudiante activo
-    const userRef = firebase.database().ref('clase/' + codigoAlumno);
-    const connectedRef = firebase.database().ref('.info/connected');
 
-    connectedRef.on('value', (snap) => {
-      if (snap.val() === true) {
-        // Alumno está dentro del portal
-        userRef.update({
-          online: true,
-          ultima_conexion: firebase.database.ServerValue.TIMESTAMP
-        });
+        // Bloqueo de seguridad: Evita registrar conexiones duplicadas repetidamente
+        if (!presencialConectada) {
+            presencialConectada = true;
+            const codigoAlumno = codigo; 
+            const userRef = firebase.database().ref('clase/' + codigoAlumno);
+            const connectedRef = firebase.database().ref('.info/connected');
 
-        // Detectar cuando el alumno cierra la pestaña o pierde conexión
-        userRef.child('online').onDisconnect().set(false);
-        userRef.child('ultima_conexion').onDisconnect().set(firebase.database.ServerValue.TIMESTAMP);
-      }
-    });
-        document.addEventListener("DOMContentLoaded", () => {
-            // Inicializar la escucha a Firebase al cargar la página
-            setTimeout(() => {
-                cargarNotificacionesGlobales();
-            }, 1000);
-        });
+            connectedRef.on('value', (snap) => {
+              if (snap.val() === true) {
+                userRef.update({
+                  online: true,
+                  ultima_conexion: firebase.database.ServerValue.TIMESTAMP
+                });
+
+                userRef.child('online').onDisconnect().set(false);
+                userRef.child('ultima_conexion').onDisconnect().set(firebase.database.ServerValue.TIMESTAMP);
+              }
+            });
+
+            cargarNotificacionesGlobales();
+            iniciarEscuchaRuletaGlobal(); // <--- Activa la recepción inmediata de la Ruleta al iniciar sesión
+        }
 
         const nombre = data.nombre ? data.nombre.toLowerCase() : "estudiante";
         document.getElementById("display-name").innerText = nombre;
         document.getElementById("avatar-initial").innerText = nombre.charAt(0).toUpperCase();
 
-        const fechaSV = new Date(new Date().toLocaleString("en-US", {timeZone: "America/El_Salvador"}));
+        // Condición estricta: SÓLO si su código empieza por ADMIN- se habilitan las herramientas
+        const esAdminReal = codigo.startsWith("ADMIN-") && localStorage.getItem("elegidos_is_admin") === "true";
+        let adminBtnHeader = document.getElementById("badge-admin-header");
+
+        if (esAdminReal) {
+            if (!adminBtnHeader) {
+                adminBtnHeader = document.createElement("div");
+                adminBtnHeader.id = "badge-admin-header";
+                adminBtnHeader.style.cssText = "display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 10px;";
+                const fechaSimActiva = localStorage.getItem("fecha_simulada_admin") || "";
+                const horaSimActiva = localStorage.getItem("hora_simulada_admin") || "";
+                adminBtnHeader.innerHTML = `
+                    <button onclick="const adminScreen=document.getElementById('admin-screen'); const dashScreen=document.getElementById('dashboard-screen'); if(adminScreen&&dashScreen){ dashScreen.classList.remove('show'); adminScreen.style.display='block'; const adminName=document.getElementById('admin-name'); if(adminName) adminName.innerText='${nombre}'; }" style="background: linear-gradient(135deg, #11001c, #8b00ff); color: white; border: 1px solid rgba(255,255,255,0.4); padding: 8px 16px; border-radius: 100px; font-weight: 800; font-size: 0.8rem; cursor: pointer; box-shadow: 0 4px 15px rgba(139,0,255,0.4); display: flex; align-items: center; gap: 6px;">👑 Consola Administrador</button>
+                    <div style="background: #1e1b4b; border: 1px solid #6366f1; padding: 6px 14px; border-radius: 100px; display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: #a5b4fc; font-weight: bold; flex-wrap: wrap;">
+                        <span>📅 Día:</span> <input type="date" id="input-fecha-header" value="${fechaSimActiva}" min="2025-01-01" max="2030-12-31" style="background: #0f172a; color: #fff; color-scheme: dark; border: 1px solid #4338ca; border-radius: 6px; padding: 2px 5px; font-size: 0.75rem; cursor: pointer;">
+                        <span>⏰ Hora:</span> <input type="time" id="input-hora-header" value="${horaSimActiva}" style="background: #0f172a; color: #fff; color-scheme: dark; border: 1px solid #4338ca; border-radius: 6px; padding: 2px 5px; font-size: 0.75rem; cursor: pointer;">
+                        <button onclick="cambiarFechaSimulada(document.getElementById('input-fecha-header').value, document.getElementById('input-hora-header').value)" style="background:#22c55e; color:white; border:none; border-radius:4px; padding:3px 8px; font-size:0.7rem; font-weight:bold; cursor:pointer;">Aplicar</button>
+                        ${(fechaSimActiva || horaSimActiva) ? '<button onclick="cambiarFechaSimulada(\'\', \'\')" style="background:#ef4444; color:white; border:none; border-radius:4px; padding:3px 6px; font-size:0.7rem; font-weight:bold; cursor:pointer;">Ahora Real</button>' : ''}
+                    </div>`;
+                document.querySelector(".top-header").appendChild(adminBtnHeader);
+            }
+        } else {
+            // Si es un estudiante normal (como Juan José), eliminamos cualquier botón de Admin si existía de antes
+            if (adminBtnHeader) adminBtnHeader.remove();
+        }
+
+        const fechaSV = obtenerFechaSistema();
         const hoy = fechaSV.getFullYear() + '-' + String(fechaSV.getMonth() + 1).padStart(2, '0') + '-' + String(fechaSV.getDate()).padStart(2, '0');
         
         // EVENTOS ESPECIALES OBLIGATORIOS DONDE SE EXIGE TICKET PARA ASISTIR
@@ -1469,6 +1962,7 @@ function mostrarRecuperacion(mostrar) {
         }
     }
 
+
     function renderizarListaClases() {
         if(esInvitado) {
             document.getElementById("contenedor-clases").innerHTML = "<p style='padding:20px; text-align:center;'>Modo Invitado activo.</p>";
@@ -1481,10 +1975,9 @@ function mostrarRecuperacion(mostrar) {
         contenedor.innerHTML = "";
         let htmlAcademico = ""; 
 
-        
         const ahora = new Date();
         let asistidas = 0; let ausencias = 0; let permisos = 0;
-        let rachaActual = 0; let rachaMaxima = 0; let tieneFlash = false;
+        let rachaActual = 0; let rachaMaxima = 0;
 
         const asistenciasData = datosEstudianteActual ? datosEstudianteActual.asistencias : null;
         let ultimaClaseAsistidaIndex = -1;
@@ -1505,13 +1998,15 @@ function mostrarRecuperacion(mostrar) {
 
             let horaIngreso = asistenciasData ? (asistenciasData[item.id] || asistenciasData[item.fecha]) : null;
 
-            if (asistenciasData) {
-                if (item.fecha === "2026-10-04" && asistenciasData["evento_elegidos"]) horaIngreso = asistenciasData["evento_elegidos"];
-                if ((item.fecha === "2026-10-25" || item.fecha === "2026-10-27") && asistenciasData["evento_masterclass"]) horaIngreso = asistenciasData["evento_masterclass"];
-                if (item.fecha === "2026-11-08" && asistenciasData["evento_festival"]) horaIngreso = asistenciasData["evento_festival"];
-            }
+            // SINCRONIZACIÓN REAL DE ASISTENCIA POR BOLETO: 
+// Si el alumno tiene el boleto asignado, automáticamente cuenta como asistencia a la clase presencial.
+if (datosEstudianteActual && datosEstudianteActual.accesos_especiales) {
+    if (item.fecha === "2026-10-04" && (datosEstudianteActual.accesos_especiales["elegidos"] || datosEstudianteActual.accesos_especiales["mahu"])) horaIngreso = "🎟️ Boleto Validado";
+    if ((item.fecha === "2026-10-25" || item.fecha === "2026-10-27") && (datosEstudianteActual.accesos_especiales["masterclass"] || datosEstudianteActual.accesos_especiales["dreamez"])) horaIngreso = "🎟️ Boleto Validado";
+    if (item.fecha === "2026-11-08" && datosEstudianteActual.accesos_especiales["festival"]) horaIngreso = "🎟️ Boleto Validado";
+}
 
-            const fechaActualSV = new Date(new Date().toLocaleString("en-US", {timeZone: "America/El_Salvador"}));
+            const fechaActualSV = obtenerFechaSistema();
             const hoyStr = fechaActualSV.getFullYear() + '-' + String(fechaActualSV.getMonth() + 1).padStart(2, '0') + '-' + String(fechaActualSV.getDate()).padStart(2, '0');
             const fechaHoraClase = new Date(item.fecha + 'T' + item.hora + ':00');
             
@@ -1533,16 +2028,16 @@ function mostrarRecuperacion(mostrar) {
             let timeInfo = "";
 
             if (horaIngreso) {
-                if (horaIngreso.toLowerCase().includes("permiso")) {
+                if (String(horaIngreso).toLowerCase().includes("permiso")) {
                     permisos++;
                     statusBadge = `<span class="status-badge" style="background: #fff7ed; color: #ea580c; border: 1px solid #ffedd5;">Permiso</span>`; 
-                    timeInfo = `Justificado: ${horaIngreso}`;
+                    timeInfo = `<span style="color:#ea580c; font-weight:700;">Justificado:</span> ${horaIngreso.replace('Permiso:', '').trim()}`;
                 } else {
                     asistidas++; 
                     rachaActual++;
                     if(rachaActual > rachaMaxima) rachaMaxima = rachaActual;
                     statusBadge = `<span class="status-badge status-ok">Asistió</span>`; 
-                    timeInfo = `Llegada: ${horaIngreso}`;
+                    timeInfo = `<span style="color:#16a34a; font-weight:700;">Hora de llegada:</span> ${horaIngreso}`;
                 }
             } 
             else if (esHoy) {
@@ -1563,7 +2058,7 @@ function mostrarRecuperacion(mostrar) {
                 ausencias++;
                 rachaActual = 0; 
                 statusBadge = `<span class="status-badge status-fail">Ausente</span>`; 
-                timeInfo = `Falta registrada`;
+                timeInfo = `<span style="color:#dc2626; font-weight:700;">No te presentaste</span>`;
             } 
             else {
                 statusBadge = `<span class="status-badge status-wait">Próx.</span>`; 
@@ -1571,9 +2066,6 @@ function mostrarRecuperacion(mostrar) {
             }
 
             const temaDinamico = temasClasesGlobales[item.id] || item.tema || "";
-            const ponenteFinal = ponentesClasesGlobales[item.id] || item.expositor || item.ponente || "Equipo ELEGIDOS";
-            
-            const iconoModalidad = item.modalidad === 'Online' ? '💻' : '📍';
             const textoModalidad = item.modalidad === 'Online' ? 'Online' : 'Presencial';
             
             let htmlTitulo = `${item.nombre || item.titulo} — ${formatearFecha(item.fecha)}`;
@@ -1588,7 +2080,7 @@ function mostrarRecuperacion(mostrar) {
                 </div>
                 <div class="class-info" style="flex: 1;">
                     <h5>${htmlTitulo}</h5>
-                    <p>${timeInfo}</p>
+                    <p style="margin-bottom: 4px;">${timeInfo}</p>
                     <div class="meta-tags">
                         <span class="meta-tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> ${item.modalidad === 'Online' ? 'Por Zoom' : 'Presencial'}</span>
                         <span class="meta-tag"><span class="tag-dot" style="background: ${item.modalidad === 'Online' ? '#2563eb' : '#ec4899'};"></span>${textoModalidad}</span>
@@ -1634,16 +2126,17 @@ function mostrarRecuperacion(mostrar) {
         document.getElementById("progress-text").innerText = porcentajeProgreso + "%";
         document.getElementById("progress-fill").style.width = porcentajeProgreso + "%";
 
-        const fechaSV = new Date(new Date().toLocaleString("en-US", {timeZone: "America/El_Salvador"}));
-        const hoyMeet = fechaSV.getFullYear() + '-' + String(fechaSV.getMonth() + 1).padStart(2, '0') + '-' + String(fechaSV.getDate()).padStart(2, '0');
+        const fechaSV = obtenerFechaSistema();
+        const hoy = fechaSV.getFullYear() + '-' + String(fechaSV.getMonth() + 1).padStart(2, '0') + '-' + String(fechaSV.getDate()).padStart(2, '0');
         const meetContainer = document.getElementById("meet-banner-container");
         
         let mostrarMeet = false;
-        const claseDeHoy = FECHAS_CURSO.find(c => c.fecha === hoyMeet && c.modalidad === 'Online');
-
+        
+        // ¡ESTE ERA EL ERROR FATAL (hoyMeet -> hoy)! 
+const claseDeHoy = FECHAS_CURSO.find(c => c.fecha === hoy && c.modalidad === 'Online');
         if (claseDeHoy) {
-            const horaApertura = new Date(`${hoyMeet}T19:45:00`);
-            const horaCierre = new Date(`${hoyMeet}T21:00:00`);
+            const horaApertura = new Date(`${hoy}T19:45:00`); 
+            const horaCierre = new Date(`${hoy}T21:00:00`); 
             
             if (fechaSV >= horaApertura && fechaSV <= horaCierre) {
                 mostrarMeet = true;
@@ -1657,132 +2150,128 @@ function mostrarRecuperacion(mostrar) {
         }
     }
 
-    const FECHAS_EVENTOS = { 
-        elegidos: "2026-10-04", 
-        mahu: "2026-10-04", 
-        masterclass: "2026-10-27", 
-        dreamez: "2026-10-27", 
-        roberto: "2026-11-01", 
-        martell: "2026-11-01", 
-        festival: "2026-11-08" 
-    };
-    
-    const IMAGENES_EVENTOS = { 
-        elegidos: "ticket MAHU.jpg", 
-        mahu: "ticket MAHU.jpg", 
-        masterclass: "ticket DREAMEZ.jpg", 
-        dreamez: "ticket DREAMEZ.jpg", 
-        roberto: "ticket MARTELL.jpg", 
-        martell: "ticket MARTELL.jpg", 
-        festival: "ticket FESTIVAL.jpg" 
-    };
+    // =========================================================
+    // SISTEMA DE BOLETOS VINCULADOS (ANIMADO Y DEFINITIVO)
+    // =========================================================
+    let antenaBoletosActiva = false;
 
-   function renderizarBoletosVinculados() {
-    const contenedor = document.getElementById("contenedor-boletos");
-    contenedor.innerHTML = "";
-    
-    if (!datosEstudianteActual || !datosEstudianteActual.boletos) {
-        contenedor.innerHTML = "<p style='text-align: center; font-size: 0.85rem; color: #94a3b8; padding: 20px;'>No tienes ningún boleto vinculado a tu cuenta.</p>";
-        return;
-    }
+    function renderizarBoletosVinculados() {
+    const codigoEstudiante = localStorage.getItem("elegidos_student_code");
+    if (!codigoEstudiante) return;
 
-    const boletosValidos = Object.keys(datosEstudianteActual.boletos).filter(codigo => {
-        const val = datosEstudianteActual.boletos[codigo];
-        const evId = typeof val === 'object' ? val.evento : val;
-        return typeof evId === 'string' && FECHAS_EVENTOS[evId];
-    });
-
-    if (boletosValidos.length === 0) {
-        contenedor.innerHTML = "<p style='text-align: center; font-size: 0.85rem; color: #94a3b8; padding: 20px;'>No tienes ningún boleto vinculado a tu cuenta.</p>";
-        return;
-    }
-
-    const fechaActualSV = new Date(new Date().toLocaleString("en-US", {timeZone: "America/El_Salvador"}));
-    const hoy = fechaActualSV.getFullYear() + '-' + String(fechaActualSV.getMonth() + 1).padStart(2, '0') + '-' + String(fechaActualSV.getDate()).padStart(2, '0');
-
-    boletosValidos.forEach(codigoBoleto => {
-        const val = datosEstudianteActual.boletos[codigoBoleto];
-        const eventoId = typeof val === 'object' ? val.evento : val;
-        const fechaEvento = FECHAS_EVENTOS[eventoId];
-        
-        const card = document.createElement("div");
-        card.className = "class-item";
-        card.style.flexDirection = "column";
-        card.style.alignItems = "flex-start";
-        card.style.marginBottom = "15px";
-        card.innerHTML = `<div style="padding: 10px; width:100%; text-align:center; color: #94a3b8; font-size: 0.8rem;">Verificando estado del ticket...</div>`;
-        contenedor.appendChild(card);
-
-        db.ref(`${eventoId}/${codigoBoleto}`).once('value').then(snap => {
-            const dataBoleto = snap.exists() ? snap.val() : null;
-            const codigoReal = localStorage.getItem("elegidos_student_code");
-            
-            if (!dataBoleto || dataBoleto.vinculado_a !== codigoReal) {
-                db.ref(`clase/${codigoReal}/boletos/${codigoBoleto}`).remove();
-                card.remove(); 
-                return;
+    if (!antenaBoletosActiva) {
+        antenaBoletosActiva = true;
+        db.ref(`clase/${codigoEstudiante}/boletos`).on('value', snap => {
+            if (!datosEstudianteActual) {
+                datosEstudianteActual = { boletos: {} };
             }
-            
-            let asistio = false;
-            if (dataBoleto && (dataBoleto.usado === true || dataBoleto.estado === 'usado' || dataBoleto.asistencia === true || dataBoleto.hora_ingreso)) {
-                asistio = true;
-            }
-
-            let estadoHTML = "";
-            let btnTicketHTML = `<button onclick="mostrarImagenBoleto('${codigoBoleto}', '${eventoId}')" style="margin-top: 10px; width: 100%; padding: 10px; border-radius: 12px; background: #ea580c; color: #ffffff; border: none; font-size: 0.8rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(234, 88, 12, 0.2);">🎟️ Mostrar Ticket Virtual</button>`;
-            
-            if (asistio) {
-                estadoHTML = `<span class="status-badge" style="background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; font-size: 0.65rem;">✅ SÍ ASISTIÓ EN EL EVENTO</span>`;
-            } else if (hoy < fechaEvento) {
-                estadoHTML = `<span class="status-badge" style="background: #e0f2fe; color: #0369a1;">Aún no inicia</span>`;
-            } else if (hoy > fechaEvento) {
-                estadoHTML = `<span class="status-badge" style="background: #fee2e2; color: #991b1b;">Finalizado</span>`;
-            } else {
-                estadoHTML = `<span class="status-badge" style="background: #fef3c7; color: #b45309;">HOY ES EL EVENTO</span>`;
-            }
-
-            card.style.borderLeft = asistio ? "4px solid #16a34a" : "4px solid #ea580c"; 
-            card.innerHTML = `
-                <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <span style="font-weight: 900; color: #000; text-transform: uppercase;">Ticket: ${codigoBoleto}</span>
-                    ${estadoHTML}
-                </div>
-                <p style="font-size: 0.85rem; color: #6b7280; font-weight: 600; margin-bottom: 5px;">Evento: <span style="color: #000; text-transform: capitalize;">${eventoId}</span></p>
-                ${btnTicketHTML}
-            `;
+            datosEstudianteActual.boletos = snap.exists() ? snap.val() : {};
+            construirInterfazBoletosElegidos();
         });
-    });
+    } else {
+        construirInterfazBoletosElegidos();
+    }
 }
 
-function mostrarImagenBoleto(codigo, eventoId) {
-        const IMAGENES_EVENTOS = { 
-            elegidos: "ticket MAHU.jpg", 
-            mahu: "ticket MAHU.jpg", 
-            masterclass: "ticket DREAMEZ.jpg", 
-            dreamez: "ticket DREAMEZ.jpg", 
-            roberto: "ticket MARTELL.jpg", 
-            martell: "ticket MARTELL.jpg", 
-            festival: "ticket FESTIVAL.jpg" 
-        };
+    function construirInterfazBoletosElegidos() {
+    const contenedorFisicos = document.getElementById("contenedor-boletos");
+    const contenedorVirtuales = document.getElementById("contenedor-boletos-virtuales");
+    if (!contenedorFisicos || !contenedorVirtuales) return;
+    
+    contenedorFisicos.innerHTML = ""; 
+    contenedorVirtuales.innerHTML = ""; 
+
+    // Mensajes de "Vacío" personalizados
+    const msgVacioFisico = `
+        <div style="background: rgba(255,255,255,0.5); padding: 30px; border-radius: 20px; text-align: center; border: 1px dashed #cbd5e1;">
+            <p style="color: #64748b; font-size: 0.95rem; font-weight: 600; margin: 0;">No has escaneado ningún boleto físico aún.</p>
+        </div>`;
+    const msgVacioVirtual = `
+        <div style="background: rgba(255,255,255,0.5); padding: 30px; border-radius: 20px; text-align: center; border: 1px dashed #e2e8f0; background: #f8fafc;">
+            <p style="color: #94a3b8; font-size: 0.95rem; font-weight: 600; margin: 0;">No tienes boletos virtuales asignados por ahora.</p>
+        </div>`;
+
+    if (!datosEstudianteActual || !datosEstudianteActual.boletos) {
+        contenedorFisicos.innerHTML = msgVacioFisico;
+        contenedorVirtuales.innerHTML = msgVacioVirtual;
+        return;
+    }
+
+    // Normalizar si viene como Arreglo o como Objeto desde el ADMIN
+    let listaBoletos = [];
+    if (Array.isArray(datosEstudianteActual.boletos)) {
+        listaBoletos = datosEstudianteActual.boletos.map((item, idx) => {
+            if (typeof item === 'object' && item !== null) {
+                return { codigo: item.codigo || item.id || `BOLETO-${idx + 1}`, ...item };
+            }
+            return { codigo: `BOLETO-${idx + 1}`, evento: item };
+        });
+    } else if (typeof datosEstudianteActual.boletos === 'object') {
+        listaBoletos = Object.keys(datosEstudianteActual.boletos).map(key => {
+            const val = datosEstudianteActual.boletos[key];
+            if (typeof val === 'object' && val !== null) {
+                return { codigo: val.codigo || key, ...val };
+            }
+            return { codigo: key, evento: val };
+        });
+    }
+
+    if (listaBoletos.length === 0) {
+        contenedorFisicos.innerHTML = msgVacioFisico;
+        contenedorVirtuales.innerHTML = msgVacioVirtual;
+        return;
+    }
+
+    
+    
+    function mostrarImagenBoleto(codigo, eventoId) {
+        const evLower = (eventoId || "").toLowerCase().trim();
+        let imgName = "ticket MAHU.jpg"; // Por defecto
         
-        const key = (eventoId || "").toLowerCase().trim();
-        const imgName = IMAGENES_EVENTOS[key];
+        if (evLower.includes("dreamez") || evLower.includes("masterclass")) imgName = "ticket DREAMEZ.jpg";
+        if (evLower.includes("festival")) imgName = "ticket FESTIVAL.jpg";
+        if (evLower.includes("roberto") || evLower.includes("martell")) imgName = "ticket MARTELL.jpg";
         
-        if (imgName) {
-            window.open(imgName, "_blank");
-        } else {
-            alert("La imagen del boleto no está disponible en este momento.");
-        }
+        window.open(imgName, "_blank");
     }
 
     function cambiarSeccion(tab, index) {
+        // Apagar la alerta de "¡NUEVO!" al entrar a los boletos
+        if (tab === 'boletos') {
+            const codigoActual = localStorage.getItem("elegidos_student_code");
+            if (codigoActual && datosEstudianteActual && datosEstudianteActual.boletos) {
+                let boletosVistos = JSON.parse(localStorage.getItem(`boletos_vistos_${codigoActual}`) || "[]");
+                let huboCambio = false;
+                Object.keys(datosEstudianteActual.boletos).forEach(k => {
+                    if (k.startsWith("VIRTUAL-") && !boletosVistos.includes(k)) {
+                        boletosVistos.push(k);
+                        huboCambio = true;
+                    }
+                });
+                if (huboCambio) {
+                    localStorage.setItem(`boletos_vistos_${codigoActual}`, JSON.stringify(boletosVistos));
+                    setTimeout(() => renderizarBoletosVinculados(), 2500); // Se apaga la alerta a los 2.5 segundos
+                }
+            }
+        }
+
         if (!esInvitado && datosEstudianteActual) {
             const p = datosEstudianteActual.perfil;
-            if (!p || !p.foto || !p.edad || !p.comunidad || !p.nivel || !p.desc) {
-                if (tab !== 'recursos') {
-                    alert("⚠️ Acción obligatoria: Debes subir una foto y llenar TODOS tus datos personales para desbloquear el portal.");
-                    tab = 'recursos';
-                    index = 3; 
+            
+            if (!p || !p.ultimaActualizacion) {
+                let faltaFoto = !p || !p.foto;
+                let faltaTexto = !p || (!p.edad || !p.comunidad || !p.nivel || !p.desc);
+
+                if (faltaFoto || faltaTexto) {
+                    // Si intenta ir a cualquier lado que NO sea Perfil o Recursos (A recursos lo dejamos pasar porque ahí está soporte)
+                    if (tab !== 'perfil' && tab !== 'recursos') {
+                        if(faltaFoto && faltaTexto) alert("⚠️ Acción obligatoria: Sube una foto y llena tus datos personales para desbloquear tu portal.");
+                        else if(faltaFoto) alert("📸 Ya casi terminas: Solo te falta subir tu fotografía para continuar.");
+                        else if(faltaTexto) alert("📝 Ya casi terminas: Llena los campos de texto faltantes en tu perfil para continuar.");
+                        
+                        tab = 'perfil';
+                        index = 4; 
+                    }
                 }
             }
         }
@@ -1819,6 +2308,8 @@ function mostrarImagenBoleto(codigo, eventoId) {
     function cerrarSesion() {
         localStorage.removeItem("elegidos_student_code");
         localStorage.removeItem("anuncio_visto_texto"); 
+        localStorage.removeItem("elegidos_is_admin");
+        localStorage.removeItem("fecha_simulada_admin");
         
         document.getElementById("dashboard-screen").classList.remove("show");
         document.getElementById("login-screen").style.display = "flex";
@@ -1918,6 +2409,7 @@ function mostrarImagenBoleto(codigo, eventoId) {
         const comunidad = document.getElementById("perfil-comunidad").value.trim();
         const nivel = document.getElementById("perfil-nivel").value;
         const desc = document.getElementById("perfil-desc").value.trim();
+        const btn = document.getElementById("btn-guardar-perfil");
 
         if(!edad || !comunidad || !nivel || !desc) {
             return alert("Por favor, llena todos los campos de texto (edad, comunidad, nivel y descripción).");
@@ -1928,6 +2420,10 @@ function mostrarImagenBoleto(codigo, eventoId) {
         }
         
         if(confirm("¿Estás seguro de guardar tu perfil? No podrás modificar estos datos de nuevo hasta dentro de 30 días.")){
+            btn.disabled = true;
+            const textOriginal = btn.innerHTML;
+            btn.innerHTML = "⏳ Guardando...";
+
             const updateData = {
                 edad: edad,
                 comunidad: comunidad,
@@ -1941,61 +2437,36 @@ function mostrarImagenBoleto(codigo, eventoId) {
                 alert("✅ Perfil guardado exitosamente.");
                 datosEstudianteActual.perfil = updateData;
                 verificarBloqueoPerfil(datosEstudianteActual);
+                btn.disabled = false;
+                btn.innerHTML = textOriginal;
+            }).catch(e => {
+                alert("Error de conexión al guardar: " + e);
+                btn.disabled = false;
+                btn.innerHTML = textOriginal;
             });
         }
     }
 
-    function cambiarPasswordDashboard() {
-        const nuevaPass = document.getElementById("dash-pass-nueva").value.trim();
-        const codigo = localStorage.getItem("elegidos_student_code");
-        
-        if(nuevaPass.length < 4) return alert("La contraseña debe tener un mínimo de 4 caracteres.");
-        
-        db.ref(`clase/${codigo}`).update({ password: nuevaPass }).then(() => {
-            alert("✅ Contraseña actualizada correctamente.");
-            document.getElementById("dash-pass-nueva").value = "";
-            datosEstudianteActual.password = nuevaPass;
-            
-            document.getElementById('caja-cambio-clave').style.display = 'none';
-            document.getElementById('btn-toggle-pass').style.display = 'block';
-        });
-    }
-
-    let fotoPermisoBase64 = null;
-
-function llenarSelectPermisos() {
+    function llenarSelectPermisos() {
         const select = document.getElementById("permiso-fecha");
         if (!select) return;
         select.innerHTML = '<option value="">Selecciona la clase a faltar...</option>';
         
-        const fechaActualSV = new Date(new Date().toLocaleString("en-US", {timeZone: "America/El_Salvador"}));
-        
         FECHAS_CURSO.forEach(clase => {
-            const fechaHoraClase = new Date(clase.fecha + 'T' + clase.hora + ':00-06:00');
-            const esFutura = fechaHoraClase > fechaActualSV;
-            
-            let estadoRegistrado = "";
-            if (datosEstudianteActual && datosEstudianteActual.asistencias) {
-                estadoRegistrado = String(datosEstudianteActual.asistencias[clase.id] || datosEstudianteActual.asistencias[clase.fecha] || "").toLowerCase();
-            }
-
-            // CANDADO: La clase DEBE ser futura Y NO debe tener registro previo de ausencia o asistencia
-            if (esFutura && !estadoRegistrado) {
-                const nombreLimpio = (clase.nombre || clase.titulo || "").toUpperCase();
-                
-                if (nombreLimpio.includes("ENTREGA") || nombreLimpio.includes("PROYECTO") || nombreLimpio.includes("FINAL")) {
-                    select.innerHTML += `<option disabled value="" style="color:#dc2626; font-weight:bold;">🚫 ${clase.nombre} (REQUISITO OBLIGATORIO PARA GRADUARSE)</option>`;
-                } else {
-                    select.innerHTML += `<option value="${clase.id}">${clase.nombre} — ${formatearFecha(clase.fecha)} (${clase.hora} hrs)</option>`;
-                }
-            }
+            const option = document.createElement("option");
+            option.value = clase.id;
+            option.textContent = `${clase.nombre || clase.titulo} (${clase.fecha})`;
+            select.appendChild(option);
         });
     }
 
     function enviarPermiso() {
+        if (!navigator.onLine) return alert("📡 Estás desconectado. Necesitas internet para enviar el permiso.");
+        
         const codigo = localStorage.getItem("elegidos_student_code");
         const claseId = document.getElementById("permiso-fecha").value;
         const razon = document.getElementById("permiso-razon").value.trim();
+        const btn = document.getElementById("btn-enviar-permiso");
         
         if (!claseId || !razon) return alert("Por favor, selecciona la clase y escribe el motivo del permiso.");
 
@@ -2004,8 +2475,6 @@ function llenarSelectPermisos() {
 
         if (claseSeleccionada) {
             const fechaHoraClase = new Date(claseSeleccionada.fecha + 'T' + claseSeleccionada.hora + ':00-06:00');
-            
-            // CANDADO DE SEGURIDAD 1: Fecha/Hora iniciada o vencida
             if (fechaActualSV >= fechaHoraClase) {
                 alert("❌ SOLICITUD RECHAZADA: La clase ya inició o ha finalizado. Solo se aceptan permisos para clases futuras.");
                 document.getElementById("permiso-fecha").value = "";
@@ -2014,7 +2483,6 @@ function llenarSelectPermisos() {
             }
         }
 
-        // CANDADO DE SEGURIDAD 2: Verificación directa contra el perfil del alumno usando el ID exacto
         if (datosEstudianteActual && datosEstudianteActual.asistencias) {
             const registroPrevio = datosEstudianteActual.asistencias[claseId] || (claseSeleccionada ? datosEstudianteActual.asistencias[claseSeleccionada.fecha] : null);
             if (registroPrevio) {
@@ -2025,7 +2493,8 @@ function llenarSelectPermisos() {
             }
         }
         
-        document.getElementById("btn-enviar-permiso").innerText = "Enviando...";
+        btn.disabled = true;
+        btn.innerText = "⏳ Enviando Solicitud...";
         
         const updates = {};
         updates[`clase/${codigo}/asistencias/${claseId}`] = "Permiso: " + razon;
@@ -2041,20 +2510,23 @@ function llenarSelectPermisos() {
             document.getElementById("permiso-razon").value = "";
             document.getElementById("permiso-foto").value = "";
             fotoPermisoBase64 = null;
-            document.getElementById("btn-enviar-permiso").innerText = "Enviar Solicitud";
+            btn.disabled = false;
+            btn.innerText = "Enviar Solicitud";
             
             if(!datosEstudianteActual.asistencias) datosEstudianteActual.asistencias = {};
             datosEstudianteActual.asistencias[claseId] = "Permiso: " + razon;
             
-            renderizarListaClases();
+           renderizarListaClases();
+renderizarCalificacionesYAsistencias(); // <--- AGREGAR ESTA LÍNEA AQUÍ
             llenarSelectPermisos(); 
         }).catch(e => {
-            alert("Error al enviar permiso: " + e);
-            document.getElementById("btn-enviar-permiso").innerText = "Enviar Solicitud";
+            alert("Error al enviar permiso (Fallo de red): " + e);
+            btn.disabled = false;
+            btn.innerText = "Enviar Solicitud";
         });
     }
     function verificarRetoActivo() {
-        const ahora = new Date(new Date().toLocaleString("en-US", {timeZone: "America/El_Salvador"}));
+        const ahora = obtenerFechaSistema();
         const fechaInicio = new Date("2026-09-27T13:00:00");
         
         if (ahora >= fechaInicio) {
@@ -2137,8 +2609,9 @@ function llenarSelectPermisos() {
         });
     }
 
-    // ¡ESTA ES LA FUNCIÓN VITAL QUE FALTABA PARA QUE REGISTRE EL TICKET!
     function vincularBoleto() {
+        if (!navigator.onLine) return alert("📡 Estás desconectado. Necesitas conexión a internet para escanear y vincular un boleto.");
+        
         const inputElement = document.getElementById("input-boleto");
         const codigoBoleto = inputElement.value.trim().toUpperCase();
         const codigoEstudiante = localStorage.getItem("elegidos_student_code");
@@ -2199,37 +2672,57 @@ function llenarSelectPermisos() {
         });
     }
     function registrarRetoManual(codigoOpcional) {
+        if (!navigator.onLine) return alert("📡 Sin conexión a internet. No podemos validar el reto.");
+        
         const codigoPropio = localStorage.getItem("elegidos_student_code");
         const codigoEscaneado = (codigoOpcional || document.getElementById("input-reto-manual").value.trim().toUpperCase());
+        const btn = document.querySelector("#tab-reto button[onclick='registrarRetoManual()']");
         
         if(!codigoEscaneado.startsWith("CLASE-2026-")) return alert("Código inválido. Asegúrate de escanear el QR correcto de un compañero.");
         if(codigoEscaneado === codigoPropio) return alert("❌ Hey tramposo, no puedes escanear tu propio código.");
         
-        const ahora = new Date(new Date().toLocaleString("en-US", {timeZone: "America/El_Salvador"}));
-        if(ahora.getDay() !== 0) {
-            return alert("⚠️ El Reto Social solo se puede realizar los días Domingo de forma presencial.");
-        }
-
         if(datosEstudianteActual.retos && datosEstudianteActual.retos[codigoEscaneado]) {
             return alert("❌ Ya has escaneado a este compañero en un domingo anterior. ¡El reto es conocer a alguien nuevo!");
         }
-        
-        db.ref('clase/' + codigoEscaneado).once('value').then(snap => {
-            if(!snap.exists()) return alert("El código de tu compañero no existe en la base de datos.");
+
+        if(btn) { btn.disabled = true; btn.innerText = "⏳ Verificando servidor..."; }
+
+        db.ref('.info/serverTimeOffset').once('value').then(offsetSnap => {
+            const offset = offsetSnap.val() || 0;
+            const horaVerdaderaServidor = new Date(Date.now() + offset);
             
-            const currentPoints = (datosEstudianteActual.puntos_sociales || 0) + 1;
-            const updates = {};
-            updates[`clase/${codigoPropio}/retos/${codigoEscaneado}`] = true;
-            updates[`clase/${codigoPropio}/puntos_sociales`] = currentPoints;
+            const opcionesSV = { timeZone: "America/El_Salvador" };
+            const fechaFalsaSV = new Date(horaVerdaderaServidor.toLocaleString("en-US", opcionesSV));
             
-            db.ref().update(updates).then(() => {
-                alert(`🎉 ¡Reto dominical completado! Has ganado 1 punto de interacción con ${snap.val().nombre}.`);
-                document.getElementById("input-reto-manual").value = "";
-                document.getElementById("puntos-sociales").innerText = currentPoints;
-                if(!datosEstudianteActual.retos) datosEstudianteActual.retos = {};
-                datosEstudianteActual.retos[codigoEscaneado] = true;
-                datosEstudianteActual.puntos_sociales = currentPoints;
+            if(fechaFalsaSV.getDay() !== 0) {
+                if(btn) { btn.disabled = false; btn.innerText = "Validar Código Manual"; }
+                return alert("⚠️ ACCESO DENEGADO: El Reto Social solo se puede realizar los días Domingo. (Validado mediante el reloj global del servidor).");
+            }
+
+            db.ref('clase/' + codigoEscaneado).once('value').then(snap => {
+                if(!snap.exists()) {
+                    if(btn) { btn.disabled = false; btn.innerText = "Validar Código Manual"; }
+                    return alert("El código de tu compañero no existe en la base de datos.");
+                }
+                
+                const currentPoints = (datosEstudianteActual.puntos_sociales || 0) + 1;
+                const updates = {};
+                updates[`clase/${codigoPropio}/retos/${codigoEscaneado}`] = true;
+                updates[`clase/${codigoPropio}/puntos_sociales`] = currentPoints;
+                
+                db.ref().update(updates).then(() => {
+                    alert(`🎉 ¡Reto dominical completado! Has ganado 1 punto de interacción con ${snap.val().nombre}.`);
+                    document.getElementById("input-reto-manual").value = "";
+                    document.getElementById("puntos-sociales").innerText = currentPoints;
+                    if(!datosEstudianteActual.retos) datosEstudianteActual.retos = {};
+                    datosEstudianteActual.retos[codigoEscaneado] = true;
+                    datosEstudianteActual.puntos_sociales = currentPoints;
+                    if(btn) { btn.disabled = false; btn.innerText = "Validar Código Manual"; }
+                });
             });
+        }).catch(err => {
+            alert("Error al conectar con el servidor: " + err);
+            if(btn) { btn.disabled = false; btn.innerText = "Validar Código Manual"; }
         });
     }
 
@@ -2261,7 +2754,6 @@ function llenarSelectPermisos() {
     });
 
     window.onload = () => {
-
         const splash = document.getElementById('splash-screen');
         if(splash) {
             splash.style.opacity = '0';
@@ -2273,103 +2765,691 @@ function llenarSelectPermisos() {
             headers.forEach(header => {
                 if (header.innerText === "Historial de Clases") {
                     const nota = document.createElement("p");
-                    nota.style.fontSize = "0.75rem";
-                    nota.style.color = "var(--text-muted)";
-                    nota.style.marginBottom = "15px";
+                    nota.style.fontSize = "0.75rem"; nota.style.color = "var(--text-muted)"; nota.style.marginBottom = "15px";
                     nota.innerHTML = "<em>* Recuerda: Las clases de los <strong>Domingos son PRESENCIALES</strong> y las clases de los <strong>Miércoles son VIRTUALES</strong>.</em>";
                     header.parentNode.insertBefore(nota, header.nextSibling);
                 }
             });
         }, 300);
 
+        // --- FUNCIÓN DE FECHA Y HORA SIMULADA PARA MODO PRUEBA / ADMIN ---
+        window.obtenerFechaSistema = function() {
+            const fechaSim = localStorage.getItem("fecha_simulada_admin");
+            const horaSim = localStorage.getItem("hora_simulada_admin");
+            
+            let d = new Date(new Date().toLocaleString("en-US", {timeZone: "America/El_Salvador"}));
+            
+            if (fechaSim) {
+                const parts = fechaSim.split("-");
+                d.setFullYear(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+            }
+            if (horaSim) {
+                const hParts = horaSim.split(":");
+                d.setHours(parseInt(hParts[0], 10), parseInt(hParts[1], 10), 0, 0);
+            }
+            return d;
+        };
+
+        window.cambiarFechaSimulada = function(nuevaFechaStr, nuevaHoraStr) {
+            if (nuevaFechaStr !== undefined && nuevaFechaStr !== null) {
+                if (!nuevaFechaStr) localStorage.removeItem("fecha_simulada_admin");
+                else localStorage.setItem("fecha_simulada_admin", nuevaFechaStr);
+            }
+            if (nuevaHoraStr !== undefined && nuevaHoraStr !== null) {
+                if (!nuevaHoraStr) localStorage.removeItem("hora_simulada_admin");
+                else localStorage.setItem("hora_simulada_admin", nuevaHoraStr);
+            }
+            window.location.reload();
+        };
+
         db.ref('configuracion/calendarioClases').on('value', snap => {
             let listaCombinadaMap = new Map();
-            
-            FECHAS_CURSO_BASE.forEach(clase => {
-                listaCombinadaMap.set(clase.fecha, JSON.parse(JSON.stringify(clase)));
-            });
-
+            // Usamos la clave por 'id' para permitir MÚLTIPLES y NUEVAS fechas sin bloqueos
+            FECHAS_CURSO_BASE.forEach(clase => { listaCombinadaMap.set(clase.id, JSON.parse(JSON.stringify(clase))); });
             if (snap.exists()) {
                 const data = snap.val();
                 Object.keys(data).forEach(key => {
                     const itemFirebase = data[key];
                     if (!itemFirebase.fecha) return;
-
                     const nombreClase = itemFirebase.titulo || itemFirebase.nombre || "Nueva Clase";
-                    
-                    const datosNuevos = {
-                        id: key,
-                        fecha: itemFirebase.fecha,
-                        hora: itemFirebase.hora || "15:00",
-                        nombre: nombreClase,
-                        expositor: itemFirebase.ponente || itemFirebase.expositor || "Equipo ELEGIDOS",
-                        modalidad: itemFirebase.modalidad || "Presencial",
-                        tema: itemFirebase.tema || ""
-                    };
-
-                    listaCombinadaMap.set(itemFirebase.fecha, { ...listaCombinadaMap.get(itemFirebase.fecha), ...datosNuevos });
+                    const datosNuevos = { id: key, fecha: itemFirebase.fecha, hora: itemFirebase.hora || "15:00", nombre: nombreClase, expositor: itemFirebase.ponente || itemFirebase.expositor || "Equipo ELEGIDOS", modalidad: itemFirebase.modalidad || "Presencial", tema: itemFirebase.tema || "" };
+                    listaCombinadaMap.set(key, { ...(listaCombinadaMap.get(key) || {}), ...datosNuevos });
                 });
             }
-
             FECHAS_CURSO = Array.from(listaCombinadaMap.values());
             FECHAS_CURSO.sort((a, b) => new Date(`${a.fecha}T${a.hora}`) - new Date(`${b.fecha}T${b.hora}`));
-
-            if (typeof datosEstudianteActual !== 'undefined' && datosEstudianteActual) {
-                renderizarListaClases();
-                if (typeof llenarSelectPermisos === 'function') llenarSelectPermisos();
-            }
+            if (typeof datosEstudianteActual !== 'undefined' && datosEstudianteActual) { renderizarListaClases(); if (typeof llenarSelectPermisos === 'function') llenarSelectPermisos(); }
         });
 
-        db.ref('configuracion/temasClases').on('value', snap => {
-            if (snap.exists()) {
-                temasClasesGlobales = snap.val();
-                if (datosEstudianteActual) renderizarListaClases(); 
-            }
-        });
+        db.ref('configuracion/temasClases').on('value', snap => { if (snap.exists()) { temasClasesGlobales = snap.val(); if (datosEstudianteActual) renderizarListaClases(); }});
+        db.ref('configuracion/ponentesClases').on('value', snap => { if (snap.exists()) { ponentesClasesGlobales = snap.val(); if (datosEstudianteActual) renderizarListaClases(); }});
 
-        db.ref('configuracion/ponentesClases').on('value', snap => {
-            if (snap.exists()) {
-                ponentesClasesGlobales = snap.val();
-                if (datosEstudianteActual) renderizarListaClases(); 
-            }
-        });
-
+       // --- DETECCIÓN DE MODO PRUEBA POR URL (?testMode=CLASE-2026-XXX) Y CAMBIO DE FECHA ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const testCode = urlParams.get('testMode');
         
+        let savedCode = localStorage.getItem("elegidos_student_code");
+        if (testCode && testCode.startsWith("CLASE-2026-")) {
+            savedCode = testCode;
+            const fechaSimActiva = localStorage.getItem("fecha_simulada_admin") ? localStorage.getItem("fecha_simulada_admin").split("T")[0] : "";
+            const bannerTest = document.createElement("div");
+            bannerTest.style.cssText = "position:fixed; top:0; left:0; width:100%; background:#9333ea; color:white; text-align:center; padding:6px; font-size:0.8rem; font-weight:800; z-index:9999999; display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;";
+            bannerTest.innerHTML = `🧪 MODO PRUEBA (${testCode}) 
+            <label style='font-size:0.75rem;'>📅 Cambiar Fecha: <input type='date' id='input-fecha-sim' value='${fechaSimActiva}' min='2025-01-01' max='2030-12-31' style='background:#fff; color:#000; border:none; border-radius:4px; padding:2px 5px; font-size:0.75rem; cursor:pointer;'></label>
+            <button onclick='cambiarFechaSimulada(document.getElementById("input-fecha-sim").value)' style='padding:3px 8px; background:#22c55e; color:white; border:none; border-radius:4px; font-size:0.75rem; font-weight:bold; cursor:pointer;'>Aplicar Fecha</button>
+            ${fechaSimActiva ? "<button onclick='cambiarFechaSimulada(\"\")' style='padding:3px 6px; background:#ef4444; color:white; border:none; border-radius:4px; font-size:0.75rem; font-weight:bold; cursor:pointer;'>Restablecer Hoy</button>" : ""}
+            <button onclick='probarRuletaLocal()' style='padding:3px 8px; background:white; color:#9333ea; border:none; border-radius:4px; font-size:0.75rem; font-weight:bold; cursor:pointer;'>Simular Ruleta</button>`;
+            document.body.prepend(bannerTest);
+        }
 
-        const savedCode = localStorage.getItem("elegidos_student_code");
+        const sessionTime = localStorage.getItem("elegidos_session_timestamp");
+
         if (savedCode) {
+            if (sessionTime && !testCode) {
+                const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+                if (Date.now() - parseInt(sessionTime) > SEVEN_DAYS_MS) {
+                    alert("Tu sesión ha expirado por inactividad. Vuelve a ingresar.");
+                    cerrarSesion();
+                    return;
+                }
+            }
+
             if(savedCode === INVITADO_USER) {
                 document.getElementById("input-codigo").value = INVITADO_USER;
                 document.getElementById("input-clave").value = INVITADO_PASS;
                 iniciarSesion();
             } else {
-                db.ref('clase/' + savedCode).once('value').then((snapshot) => {
-                    if (snapshot.exists()) { 
-                        datosEstudianteActual = snapshot.val(); 
-                        cargarDashboard(savedCode, datosEstudianteActual); 
+                const cachedData = localStorage.getItem("elegidos_cache_" + savedCode);
+                if (cachedData && !testCode) {
+                    datosEstudianteActual = JSON.parse(cachedData);
+                    cargarDashboard(savedCode, datosEstudianteActual);
+                }
+
+                db.ref('clase/' + savedCode).on('value', (snap) => {
+                    if (snap.exists()) {
+                        datosEstudianteActual = snap.val();
+                        localStorage.setItem("elegidos_cache_" + savedCode, JSON.stringify(datosEstudianteActual));
                         
-                        db.ref('clase/' + savedCode).on('value', (snap) => {
-                            if (snap.exists()) {
-                                datosEstudianteActual = snap.val();
-                                
-                                if(datosEstudianteActual.perfil && datosEstudianteActual.perfil.color) {
-                                    if(window.innerWidth <= 768) {
-                                        document.querySelector('.top-header').style.background = `linear-gradient(135deg, ${datosEstudianteActual.perfil.color} 0%, var(--purple-dark) 100%)`;
-                                    }
-                                    document.documentElement.style.setProperty('--purple-main', datosEstudianteActual.perfil.color);
-                                }
-                                
-                                renderizarListaClases();
-                                renderizarBoletosVinculados();
-                                llenarSelectPermisos();   
-                                verificarRetoActivo();
-                            }
-                        });
+                        if(datosEstudianteActual.perfil && datosEstudianteActual.perfil.color) {
+                            if(window.innerWidth <= 768) { document.querySelector('.top-header').style.background = `linear-gradient(135deg, ${datosEstudianteActual.perfil.color} 0%, var(--purple-dark) 100%)`; }
+                            document.documentElement.style.setProperty('--purple-main', datosEstudianteActual.perfil.color);
+                        }
+                        
+                        cargarDashboard(savedCode, datosEstudianteActual);
+                        renderizarListaClases();
+                        renderizarBoletosVinculados();
+                        llenarSelectPermisos();   
+                        verificarRetoActivo();
                     }
                 });
             }
         }
-    };    
+
+        // --- INICIALIZAR ESCUCHA EN TIEMPO REAL DE RULETA GLOBAL ---
+        iniciarEscuchaRuletaGlobal();
+    };
+
+    // =========================================================
+    // SISTEMA DE ASISTENCIA VIRTUAL (HUELLA + RELOJ + PIN)
+    // =========================================================
+    
+    let intervaloReloj = null;
+    let popupAsistenciaMostrado = false;
+
+    // 1. Deja la marca invisible y abre Meet
+    window.registrarIngresoMeet = function(url) {
+        const ahora = new Date(new Date().toLocaleString("en-US", {timeZone: "America/El_Salvador"}));
+        const hoy = ahora.getFullYear() + '-' + String(ahora.getMonth() + 1).padStart(2, '0') + '-' + String(ahora.getDate()).padStart(2, '0');
+        
+        localStorage.setItem('ingreso_meet_' + hoy, 'true'); // ¡Huella registrada!
+        window.open(url, "_blank");
+    };
+
+    // 2. El vigilante en segundo plano
+    window.iniciarRelojAsistenciaVirtual = function() {
+        if (intervaloReloj) clearInterval(intervaloReloj);
+        
+        intervaloReloj = setInterval(() => {
+            const ahora = new Date(new Date().toLocaleString("en-US", {timeZone: "America/El_Salvador"}));
+            const hoy = ahora.getFullYear() + '-' + String(ahora.getMonth() + 1).padStart(2, '0') + '-' + String(ahora.getDate()).padStart(2, '0');
+            
+            // Verifica si hoy hay una clase Online
+            const claseDeHoy = FECHAS_CURSO.find(c => c.fecha === hoy && c.modalidad === 'Online');
+            
+            // Si hay clase hoy, y el reloj marca entre las 20:30 y 20:50
+            if (claseDeHoy && ahora.getHours() === 20 && ahora.getMinutes() >= 30 && ahora.getMinutes() <= 50) {
+                
+                const entroAMeet = localStorage.getItem('ingreso_meet_' + hoy);
+                
+                // Si el sistema detecta la huella y no le ha mostrado la alerta aún...
+                if (entroAMeet === 'true' && !popupAsistenciaMostrado) {
+                    
+                    // Asegurarnos de que no tenga ya la asistencia registrada para no molestar
+                    const yaAsistio = datosEstudianteActual && datosEstudianteActual.asistencias && datosEstudianteActual.asistencias[claseDeHoy.id];
+                    
+                    if (!yaAsistio) {
+                        document.getElementById('modal-pin-asistencia').classList.add('activo');
+                        popupAsistenciaMostrado = true; // Apaga el gatillo para esta sesión
+                    }
+                }
+            }
+        }, 20000); // Revisa silenciosamente cada 20 segundos
+    };
+
+    // 3. Validador final contra Firebase
+    window.validarPinAsistencia = function() {
+        if (!navigator.onLine) return alert("📡 Sin conexión. Necesitas internet para validar tu asistencia.");
+        
+        const pinIngresado = document.getElementById('input-pin-asistencia').value.trim();
+        const btn = document.getElementById('btn-validar-pin');
+        const msgError = document.getElementById('msg-pin-error');
+        
+        if (pinIngresado.length !== 4) {
+            msgError.innerText = "El PIN debe tener exactamente 4 dígitos.";
+            msgError.style.display = "block";
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = "⏳ Validando...";
+        msgError.style.display = "none";
+
+        const ahora = new Date(new Date().toLocaleString("en-US", {timeZone: "America/El_Salvador"}));
+        const hoy = ahora.getFullYear() + '-' + String(ahora.getMonth() + 1).padStart(2, '0') + '-' + String(ahora.getDate()).padStart(2, '0');
+
+        // Cruzar el PIN con el que generó el Admin en Firebase
+        db.ref('sistema/asistencia_virtual/' + hoy).once('value').then(snap => {
+            const pinReal = snap.val();
+            
+            if (snap.exists() && String(pinReal) === String(pinIngresado)) {
+                
+                const claseDeHoy = FECHAS_CURSO.find(c => c.fecha === hoy && c.modalidad === 'Online');
+                if (claseDeHoy) {
+                    const codigo = localStorage.getItem("elegidos_student_code");
+                    const horaActualStr = String(ahora.getHours()).padStart(2, '0') + ':' + String(ahora.getMinutes()).padStart(2, '0');
+                    const registro = horaActualStr + " (Asistió Virtualmente)";
+                    
+                    db.ref(`clase/${codigo}/asistencias/${claseDeHoy.id}`).set(registro).then(() => {
+                        document.getElementById('modal-pin-asistencia').classList.remove('activo');
+                        alert("✅ ¡Asistencia virtual registrada exitosamente!");
+                        
+                        // Reflejarlo de inmediato en el historial visual
+                        if(!datosEstudianteActual.asistencias) datosEstudianteActual.asistencias = {};
+                        datosEstudianteActual.asistencias[claseDeHoy.id] = registro;
+                        renderizarListaClases();
+                        btn.disabled = false;
+                        btn.innerText = "Validar PIN";
+                    }).catch(e => {
+                        msgError.innerText = "Error de red al guardar. Intenta de nuevo.";
+                        msgError.style.display = "block";
+                        btn.disabled = false;
+                        btn.innerText = "Validar PIN";
+                    });
+                }
+            } else {
+                msgError.innerText = "❌ PIN incorrecto. Revisa la pantalla de Meet.";
+                msgError.style.display = "block";
+                btn.disabled = false;
+                btn.innerText = "Validar PIN";
+            }
+        }).catch(e => {
+            msgError.innerText = "❌ Fallo de conexión con el servidor.";
+            msgError.style.display = "block";
+            btn.disabled = false;
+            btn.innerText = "Validar PIN";
+        });
+    };
+
+    // 4. Generador de PIN para el Administrador
+    window.generarPinParaHoy = function() {
+        if (!navigator.onLine) return alert("📡 Sin conexión a internet.");
+        
+        const pin = Math.floor(1000 + Math.random() * 9000); // 4 dígitos aleatorios
+        const ahora = new Date(new Date().toLocaleString("en-US", {timeZone: "America/El_Salvador"}));
+        const hoy = ahora.getFullYear() + '-' + String(ahora.getMonth() + 1).padStart(2, '0') + '-' + String(ahora.getDate()).padStart(2, '0');
+        
+        const btn = document.getElementById('btn-generar-pin');
+        const originalText = btn.innerText;
+        btn.innerText = "⏳ Generando...";
+        btn.disabled = true;
+
+        db.ref('sistema/asistencia_virtual/' + hoy).set(pin).then(() => {
+            const display = document.getElementById("admin-pin-display");
+            display.style.display = "block";
+            document.getElementById("pin-number-text").innerText = pin;
+            btn.innerText = "Regenerar PIN";
+            btn.disabled = false;
+        }).catch(e => {
+            alert("Error al conectar con la base de datos.");
+            btn.innerText = originalText;
+            btn.disabled = false;
+        });
+    };
+
+   // =========================================================
+    // MOTOR DE RULETA EN VIVO Y SIMULACIÓN LOCAL
+    // =========================================================
+    let animacionRuletaInterval = null;
+    let antenaRuletaActiva = false;
+
+    function iniciarEscuchaRuletaGlobal() {
+        if (antenaRuletaActiva) return; // Previene crear múltiples listeners en paralelo
+        antenaRuletaActiva = true;
+
+        db.ref('sistema/ruleta').on('value', snap => {
+            const data = snap.val();
+            ejecutarEfectoRuletaVisual(data);
+        });
+    }
+
+    function abrirRuletaPantallaCompleta() {
+        const overlay = document.getElementById("ruleta-overlay");
+        if (overlay) overlay.style.display = 'flex';
+    }
+
+    function ejecutarEfectoRuletaVisual(data) {
+        const overlay = document.getElementById("ruleta-overlay");
+        const cinta = document.getElementById("ruleta-cinta");
+        const statusText = document.getElementById("ruleta-status-text");
+        const bannerLive = document.getElementById("banner-ruleta-live");
+        const txtBanner = document.getElementById("txt-banner-ruleta");
+
+        if (!data || data.estado === 'inactiva') {
+            if (overlay) overlay.style.display = 'none';
+            if (bannerLive) bannerLive.style.display = 'none';
+            if (animacionRuletaInterval) clearInterval(animacionRuletaInterval);
+            return;
+        }
+
+        if (data.estado === 'girando') {
+            if (bannerLive) bannerLive.style.display = 'flex';
+            if (overlay) overlay.style.display = 'flex';
+            if (txtBanner) txtBanner.innerText = "⚡ Sorteo girando en vivo...";
+            if (statusText) {
+                statusText.innerText = "⚡ PASANDO NOMBRES EN VIVO...";
+                statusText.style.color = "#ff00c8";
+            }
+
+            const participantes = (data.participantes && data.participantes.length > 0) 
+                ? data.participantes 
+                : ["Analizando conectados..."];
+
+            if (animacionRuletaInterval) clearInterval(animacionRuletaInterval);
+
+            // Efecto de movimiento veloz pasando nombre por nombre
+            animacionRuletaInterval = setInterval(() => {
+                const randomName = participantes[Math.floor(Math.random() * participantes.length)];
+                if (cinta) cinta.innerHTML = `<div class="ruleta-nombre-item">${randomName}</div>`;
+            }, 45);
+        } 
+        else if (data.estado === 'resultado') {
+            if (animacionRuletaInterval) clearInterval(animacionRuletaInterval);
+
+            const ganador = data.ganador || "Nadie";
+            if (txtBanner) txtBanner.innerText = "🎉 Ganador: " + ganador;
+            if (cinta) cinta.innerHTML = `<div class="ruleta-nombre-item" style="color: #22c55e; font-size: 3.5rem; text-shadow: 0 0 30px rgba(34,197,94,0.8);">${ganador}</div>`;
+            if (statusText) {
+                statusText.innerHTML = "🎉 <b>¡ELEGIDO(A) PARA LA DINÁMICA!</b> 🎉";
+                statusText.style.color = "#22c55e";
+            }
+
+            // Oculta automáticamente tanto la pantalla completa como el banner tras 7 segundos
+            setTimeout(() => {
+                if (overlay) overlay.style.display = 'none';
+                if (bannerLive) bannerLive.style.display = 'none';
+            }, 7000);
+        }
+    }
+
+    // Función de prueba para verificar la ruleta directamente en el portal sin usar el Admin
+    function probarRuletaLocal() {
+        const nombresTest = ["Glenda Flores", "Anthony Lazo", "Andrea Martínez", "Carlos Gómez", "Mariana Ríos"];
+        
+        ejecutarEfectoRuletaVisual({
+            estado: 'girando',
+            participantes: nombresTest
+        });
+
+        setTimeout(() => {
+            const ganadorRandom = nombresTest[Math.floor(Math.random() * nombresTest.length)];
+            ejecutarEfectoRuletaVisual({
+                estado: 'resultado',
+                ganador: ganadorRandom
+            });
+
+            setTimeout(() => {
+                ejecutarEfectoRuletaVisual({ estado: 'inactiva' });
+            }, 4000);
+        }, 4000);
+    }
+
+    // =========================================================
+    // FUNCIÓN DE ASIGNACIÓN MASIVA DE BOLETOS VIRTUALES
+    // =========================================================
+    window.asignarBoletosMasivos = function() {
+        const eventoId = document.getElementById("select-evento-masivo").value;
+        const btn = document.getElementById("btn-asignar-masivo");
+        const msgInfo = document.getElementById("msg-asignacion-masiva");
+
+        if (!eventoId) {
+            alert("Por favor, selecciona un evento de la lista.");
+            return;
+        }
+
+        if (!confirm(`🚨 ADVERTENCIA: Estás a punto de crear y asignar un boleto virtual para '${eventoId}' a TODOS los estudiantes de la base de datos de manera automática. ¿Deseas continuar?`)) {
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = "⏳ Leyendo estudiantes...";
+        msgInfo.style.display = "block";
+        msgInfo.style.color = "#ea580c";
+        msgInfo.innerText = "Calculando asignaciones...";
+
+        // Obtenemos a todos los estudiantes registrados en la raíz 'clase/'
+        db.ref('clase').once('value').then(snap => {
+            if (!snap.exists()) throw new Error("No hay estudiantes registrados.");
+
+            const estudiantes = snap.val();
+            const updates = {};
+            let conteoAsignados = 0;
+
+            // Recorremos estudiante por estudiante
+           Object.keys(estudiantes).forEach(codigoEstudiante => {
+    // ESTA REGLA EXCLUYE A LOS ADMINS
+    if (codigoEstudiante.startsWith("CLASE-")) {
+                // Filtramos para asegurar que sean estudiantes reales
+                if (codigoEstudiante.startsWith("CLASE-")) {
+                    // Creamos un código de ticket único VIRTUAL para el alumno
+                    const numEstudiante = codigoEstudiante.split('-').pop();
+let prefijo = "";
+if (eventoId === "elegidos") prefijo = "ELEGIDOS";
+else if (eventoId === "masterclass") prefijo = "DREAMEZ";
+else if (eventoId === "festival") prefijo = "FESTIVAL";
+else prefijo = eventoId.toUpperCase();
+
+const codigoBoleto = `${prefijo}-2026-${numEstudiante}`;
+                    
+                    // 1. Registramos el boleto en la base de datos del evento
+                    updates[`${eventoId}/${codigoBoleto}`] = {
+            vinculado_a: codigoEstudiante,
+            tipo: "virtual", // ¡Esta palabra activa la caja especial en el portal del alumno!
+            estado: "activo",
+                        fecha_asignacion: new Date().toISOString()
+                    };
+                    
+                    // 2. Vinculamos el boleto al perfil del estudiante y damos el acceso especial
+                    updates[`clase/${codigoEstudiante}/boletos/${codigoBoleto}`] = eventoId;
+                    updates[`clase/${codigoEstudiante}/accesos_especiales/${eventoId}`] = true;
+                    
+                    conteoAsignados++;
+                }
+            });
+
+            btn.innerText = "⏳ Subiendo a servidor...";
+            msgInfo.innerText = `Asignando boletos a ${conteoAsignados} estudiantes. No cierres la ventana...`;
+
+            // Hacemos el envío de forma masiva (Bulk Update) para ahorrar llamadas a Firebase
+            return db.ref().update(updates).then(() => conteoAsignados);
+
+        }).then(conteo => {
+            btn.disabled = false;
+            btn.innerText = "Asignar a Todos";
+            msgInfo.style.color = "#16a34a"; // Verde éxito
+            msgInfo.innerText = `✅ ¡Operación exitosa! Se han asignado boletos de forma masiva a ${conteo} estudiantes.`;
+        }).catch(error => {
+            btn.disabled = false;
+            btn.innerText = "Asignar a Todos";
+            msgInfo.style.color = "#dc2626"; // Rojo error
+            msgInfo.innerText = `❌ Ocurrió un error: ${error.message}`;
+        });
+    };
+</script>
+
+<!-- POPUP ASISTENCIA VIRTUAL (PIN) -->
+<div class="noti-overlay" id="modal-pin-asistencia" style="z-index: 9999999; flex-direction: column;">
+    <div class="noti-card" style="position: relative; max-height: max-content; padding: 40px 24px; text-align: center; border-radius: 36px; border: 2px solid var(--purple-main); align-items: center; justify-content: center;">
+        <button class="noti-close" style="position: absolute; top: 20px; right: 20px;" onclick="document.getElementById('modal-pin-asistencia').classList.remove('activo')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        <div style="background: linear-gradient(135deg, #8b5cf6, #ec4899); width: 70px; height: 70px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; box-shadow: 0 10px 25px rgba(139,0,255,0.3);">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        </div>
+        <h2 style="font-size: 1.6rem; font-weight: 900; color: #0f172a; margin-bottom: 8px; letter-spacing: -0.5px;">Registro de Asistencia</h2>
+        <p style="font-size: 0.95rem; color: #64748b; margin-bottom: 25px; font-weight: 500; line-height: 1.4;">Ingresa el PIN de 4 dígitos que el instructor está mostrando en la pantalla de Google Meet.</p>
+        
+        <input type="number" id="input-pin-asistencia" class="input-field" placeholder="0000" style="text-align: center; font-size: 2rem; letter-spacing: 12px; font-weight: 900; max-width: 220px; margin: 0 auto 20px; padding: 15px;">
+        
+        <button class="btn-main" id="btn-validar-pin" onclick="validarPinAsistencia()" style="max-width: 220px; margin: 0 auto;">Validar PIN</button>
+        <p id="msg-pin-error" style="color: #dc2626; font-size: 0.85rem; font-weight: 700; margin-top: 15px; display: none; background: #fef2f2; padding: 10px; border-radius: 12px;">PIN incorrecto. Verifica la pantalla.</p>
+    </div>
+</div>
+
+<!-- OVERLAY RULETA EN VIVO (SUPERPUESTA A CONECTADOS) -->
+<div id="ruleta-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(9, 9, 11, 0.96); z-index:99999999; flex-direction:column; justify-content:center; align-items:center; text-align:center; color:white; animation: ruletaAparece 0.4s forwards;">
+    <div style="position:absolute; width:40vw; height:40vw; background:var(--purple-main); filter:blur(100px); opacity:0.3; border-radius:50%; top:-10%; left:-10%; pointer-events:none;"></div>
+    <div style="position:absolute; width:40vw; height:40vw; background:var(--pink-accent); filter:blur(100px); opacity:0.2; border-radius:50%; bottom:-10%; right:-10%; pointer-events:none;"></div>
+
+    <h2 style="color: #f8fafc; font-size:1.5rem; margin-bottom: 40px; letter-spacing: 4px; text-transform: uppercase; font-weight: 900;">⚡ SORTEO EN VIVO ELEGIDOS ⚡</h2>
+    
+    <div style="background: rgba(255,255,255,0.03); border: 2px solid rgba(139, 0, 255, 0.5); padding: 40px 20px; border-radius: 36px; width: 90%; max-width: 500px; box-shadow: inset 0 0 50px rgba(139,0,255,0.1), 0 20px 50px rgba(0,0,0,0.5); position: relative; z-index: 10;">
+        <div id="ruleta-nombres" style="height: 70px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;">
+            <div id="ruleta-cinta" style="width: 100%;">
+                <!-- Nombre por nombre rápido -->
+            </div>
+        </div>
+    </div>
+    
+    <p id="ruleta-status-text" style="margin-top: 40px; font-size: 1.2rem; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 2px;">SELECCIONANDO EN VIVO...</p>
+</div>
+<!-- VENTANA EMERGENTE (MODAL): MIS CALIFICACIONES Y ASISTENCIAS -->
+<div class="noti-overlay" id="modal-mis-calificaciones" style="z-index: 9999999;">
+    <div class="noti-card" style="max-width: 720px; height: 85vh; max-height: 85vh; padding: 28px; background: rgba(15, 23, 42, 0.96); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 32px; overflow-y: auto; color: #fff;">
+        <button class="noti-close" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.1); color: #fff; border: none;" onclick="cerrarMisCalificaciones()">✕</button>
+
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; padding-right: 40px;">
+            <div>
+                <h3 style="font-size: 1.7rem; font-weight: 900; color: #fff; letter-spacing: -0.5px; margin-bottom: 4px;">
+                    Mis Calificaciones <span style="color: var(--pink-accent);">y Asistencias</span>
+                </h3>
+                <p style="font-size: 0.85rem; color: #94a3b8; font-weight: 500;">
+                    Cuatrimestre Académico (Sep - Dic). Rendimiento mes a mes.
+                </p>
+            </div>
+            <div id="calif-status-badge-container">
+                <span class="calif-status-badge calif-status-seguro">🟢 Calculando...</span>
+            </div>
+        </div>
+
+        <!-- 1. RESUMEN GLOBAL -->
+        <div class="calif-summary-grid">
+            <div class="calif-summary-card">
+                <span style="font-size: 0.7rem; color: #94a3b8; font-weight: 800; text-transform: uppercase; display: block; margin-bottom: 4px;">Promedio Proyectado</span>
+                <h2 style="font-size: 1.8rem; font-weight: 900; color: #f472b6; margin: 0;" id="calif-promedio-global">0.0</h2>
+            </div>
+            <div class="calif-summary-card">
+                <span style="font-size: 0.7rem; color: #94a3b8; font-weight: 800; text-transform: uppercase; display: block; margin-bottom: 4px;">Asistencia Global</span>
+                <h2 style="font-size: 1.8rem; font-weight: 900; color: #4ade80; margin: 0;" id="calif-asistencia-pct">0%</h2>
+                <span style="font-size: 0.65rem; color: #cbd5e1;" id="calif-asistencia-conteo">0 / 0 clases</span>
+            </div>
+            <div class="calif-summary-card">
+                <span style="font-size: 0.7rem; color: #94a3b8; font-weight: 800; text-transform: uppercase; display: block; margin-bottom: 4px;">Faltas Totales</span>
+                <h2 style="font-size: 1.8rem; font-weight: 900; color: #f87171; margin: 0;" id="calif-faltas-total">0</h2>
+            </div>
+        </div>
+
+        <!-- 2. TABLA CUATRIMESTRAL DE MESES -->
+        <div class="calif-table-wrapper">
+            <table class="calif-table">
+                <thead>
+                    <tr>
+                        <th>Mes</th>
+                        <th>Evaluaciones & Tareas</th>
+                        <th style="text-align: center;">Asistencia</th>
+                        <th style="text-align: center;">Nota Mes</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-calificaciones-body">
+                    <!-- Inyectado dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL SECUNDARIO DE FALTAS DEL MES -->
+<div class="noti-overlay" id="modal-detalle-faltas" style="z-index: 99999999;">
+    <div class="noti-card" style="max-height: max-content; padding: 30px 20px;">
+        <button class="noti-close" style="position: absolute; top: 15px; right: 15px;" onclick="document.getElementById('modal-detalle-faltas').classList.remove('activo')">✕</button>
+        <h3 id="modal-faltas-titulo" style="font-size: 1.2rem; font-weight: 900; color: #0f172a; margin-bottom: 15px;">Detalle de Asistencia</h3>
+        <div id="modal-faltas-body" style="font-size: 0.85rem; color: #475569; max-height: 250px; overflow-y: auto;">
+            <!-- Contenido dinámico -->
+        </div>
+    </div>
+</div>
+<script>
+    // =========================================================================
+    // LÓGICA DE MIS CALIFICACIONES Y ASISTENCIAS (MODAL LIGERO)
+    // =========================================================================
+
+    function abrirMisCalificaciones() {
+        renderizarCalificacionesYAsistencias();
+        const modal = document.getElementById("modal-mis-calificaciones");
+        if (modal) modal.classList.add("activo");
+    }
+
+    function cerrarMisCalificaciones() {
+        const modal = document.getElementById("modal-mis-calificaciones");
+        if (modal) modal.classList.remove("activo");
+    }
+
+    function renderizarCalificacionesYAsistencias() {
+        const tbody = document.getElementById("tabla-calificaciones-body");
+        if (!tbody) return;
+
+        const MESES = [
+            { id: 9, nombre: "Septiembre", desc: "Inicio y Diagnóstico", targetKey: "sep" },
+            { id: 10, nombre: "Octubre", desc: "Consolidación y Entregas", targetKey: "oct" },
+            { id: 11, nombre: "Noviembre", desc: "Proyectos integradores", targetKey: "nov" },
+            { id: 12, nombre: "Diciembre", desc: "Examen Final y Cierre", targetKey: "dic" }
+        ];
+
+        const califsBD = (datosEstudianteActual && datosEstudianteActual.calificaciones) ? datosEstudianteActual.calificaciones : {};
+        const asistenciasBD = (datosEstudianteActual && datosEstudianteActual.asistencias) ? datosEstudianteActual.asistencias : {};
+
+        let sumaNotas = 0;
+        let mesesConNota = 0;
+        let totalClasesCuatrimestre = 0;
+        let asistenciasCuatrimestre = 0;
+        let faltasTotales = 0;
+
+        let htmlFilas = "";
+
+        MESES.forEach(mes => {
+            const clasesMes = FECHAS_CURSO.filter(c => {
+                if (!c.fecha) return false;
+                const m = parseInt(c.fecha.split("-")[1], 10);
+                return m === mes.id;
+            });
+
+            let asistenciasMes = 0;
+            let faltasJustificadas = 0;
+            let faltasInjustificadas = 0;
+
+            clasesMes.forEach(clase => {
+    totalClasesCuatrimestre++;
+    let registro = asistenciasBD[clase.id] || asistenciasBD[clase.fecha];
+    
+    // Sincronización oficial: Si tienen el boleto vinculado, evita que les cuente como falta.
+    if (datosEstudianteActual && datosEstudianteActual.accesos_especiales) {
+        if (clase.fecha === "2026-10-04" && (datosEstudianteActual.accesos_especiales["elegidos"] || datosEstudianteActual.accesos_especiales["mahu"])) registro = "Boleto Presentado";
+        if ((clase.fecha === "2026-10-25" || clase.fecha === "2026-10-27") && (datosEstudianteActual.accesos_especiales["masterclass"] || datosEstudianteActual.accesos_especiales["dreamez"])) registro = "Boleto Presentado";
+        if (clase.fecha === "2026-11-08" && datosEstudianteActual.accesos_especiales["festival"]) registro = "Boleto Presentado";
+    }
+
+    if (registro) {
+                    if (String(registro).toLowerCase().includes("permiso")) {
+                        faltasJustificadas++;
+                    } else {
+                        asistenciasMes++;
+                        asistenciasCuatrimestre++;
+                    }
+                } else {
+                    const fechaClase = new Date(clase.fecha + "T23:59:59");
+                    const ahora = (typeof obtenerFechaSistema === "function") ? obtenerFechaSistema() : new Date();
+                    if (ahora > fechaClase) {
+                        faltasInjustificadas++;
+                        faltasTotales++;
+                    }
+                }
+            });
+
+            const totalEnMes = clasesMes.length || 1;
+            const pctAsistenciaMes = Math.round((asistenciasMes / totalEnMes) * 100);
+            const notaMes = califsBD[mes.targetKey] !== undefined ? parseFloat(califsBD[mes.targetKey]) : null;
+
+            let notaBadgeHTML = `<span style="color: #64748b; font-size: 0.8rem; font-style: italic;">Por calificar</span>`;
+            if (notaMes !== null) {
+                sumaNotas += notaMes;
+                mesesConNota++;
+                let clasePill = notaMes >= 9.0 ? "nota-excelente" : (notaMes >= 8.0 ? "nota-buena" : (notaMes >= 7.0 ? "nota-regular" : "nota-baja"));
+                notaBadgeHTML = `<span class="calif-nota-pill ${clasePill}">${notaMes.toFixed(1)}</span>`;
+            }
+
+            htmlFilas += `
+                <tr>
+                    <td>
+                        <strong style="color: #fff; font-size: 0.95rem; display: block;">${mes.nombre}</strong>
+                        <span style="font-size: 0.7rem; color: #94a3b8;">${mes.desc}</span>
+                    </td>
+                    <td style="font-size: 0.8rem; color: #cbd5e1;">
+                        Evaluación continua, Tareas & Prácticas
+                    </td>
+                    <td style="text-align: center; cursor: pointer;" onclick="abrirDetalleFaltasMes('${mes.nombre}', ${asistenciasMes}, ${totalEnMes}, ${faltasJustificadas}, ${faltasInjustificadas})">
+                        <span style="font-weight: 800; color: ${pctAsistenciaMes >= 80 ? '#4ade80' : '#f87171'};">${pctAsistenciaMes}%</span><br>
+                        <small style="font-size: 0.65rem; color: #94a3b8; text-decoration: underline;">${asistenciasMes}/${totalEnMes} ses. (ver)</small>
+                    </td>
+                    <td style="text-align: center;">
+                        ${notaBadgeHTML}
+                    </td>
+                </tr>
+            `;
+        });
+
+        tbody.innerHTML = htmlFilas;
+
+        const promedioProyectado = mesesConNota > 0 ? (sumaNotas / mesesConNota) : 8.5; 
+        const pctAsistenciaGlobal = totalClasesCuatrimestre > 0 ? Math.round((asistenciasCuatrimestre / totalClasesCuatrimestre) * 100) : 100;
+
+        document.getElementById("calif-promedio-global").innerText = promedioProyectado.toFixed(1);
+        document.getElementById("calif-asistencia-pct").innerText = pctAsistenciaGlobal + "%";
+        document.getElementById("calif-asistencia-conteo").innerText = `${asistenciasCuatrimestre} de ${totalClasesCuatrimestre} clases`;
+        document.getElementById("calif-faltas-total").innerText = faltasTotales;
+
+        const containerBadge = document.getElementById("calif-status-badge-container");
+        if (containerBadge) {
+            if (promedioProyectado >= 8.0 && pctAsistenciaGlobal >= 80) {
+                containerBadge.innerHTML = `<span class="calif-status-badge calif-status-seguro">🟢 Cierre Seguro</span>`;
+            } else if (promedioProyectado >= 7.0 && pctAsistenciaGlobal >= 70) {
+                containerBadge.innerHTML = `<span class="calif-status-badge calif-status-ajuste">🟡 Ajuste en Diciembre</span>`;
+            } else {
+                containerBadge.innerHTML = `<span class="calif-status-badge calif-status-riesgo">🔴 Riesgo de Recuperatorio</span>`;
+            }
+        }
+    }
+
+    function abrirDetalleFaltasMes(nombreMes, asistidas, total, justificadas, injustificadas) {
+        document.getElementById("modal-faltas-titulo").innerText = `Asistencia de ${nombreMes}`;
+        document.getElementById("modal-faltas-body").innerHTML = `
+            <div style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 10px;">
+                <p>🟢 <strong>Clases Asistidas:</strong> ${asistidas} de ${total}</p>
+                <p style="margin-top: 6px;">🟠 <strong>Faltas Justificadas (Permisos):</strong> ${justificadas}</p>
+                <p style="margin-top: 6px;">🔴 <strong>Inasistencias Injustificadas:</strong> ${injustificadas}</p>
+            </div>
+            <p style="font-size: 0.75rem; color: #94a3b8; text-align: center;">Recuerda mantener mínimo un 80% de asistencia para tu diploma oficial.</p>
+        `;
+        document.getElementById("modal-detalle-faltas").classList.add("activo");
+    }
 </script>
 </body>
 </html>
