@@ -1,3 +1,10 @@
+<!-- 
+/* 
+ * Desarrollado para el Portal Estudiantil ELEGIDOS
+ * Asistido por herramientas de desarrollo e inteligencia artificial.
+ * Todos los derechos reservados.
+ */
+-->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -39,6 +46,22 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
 
+/* OPTIMIZACIÓN PROFESIONAL DE FLUIDEZ (60 FPS) */
+        html { 
+            scroll-behavior: smooth; 
+            -webkit-font-smoothing: antialiased; 
+            -moz-osx-font-smoothing: grayscale; 
+            text-rendering: optimizeLegibility;
+        }
+        body { overscroll-behavior-y: none; } /* Evita el rebote molesto en móviles */
+        
+        /* Aceleración por GPU para elementos interactivos */
+        .class-item, .stat-card, .btn-main, .promo-card, .noti-card, #examen-live-overlay { 
+            transform: translateZ(0); 
+            backface-visibility: hidden;
+            perspective: 1000px;
+            will-change: transform, opacity; /* Prepara el navegador para animar sin lag */
+        }
         body { background-color: var(--bg-app); display: flex; justify-content: center; min-height: 100vh; color: var(--text-dark); }
         .app-container { width: 100%; max-width: 480px; background-color: var(--bg-app); min-height: 100vh; position: relative; overflow-x: hidden; display: flex; flex-direction: column; }
 
@@ -122,6 +145,7 @@
         .categories-wrapper { display: flex; align-items: center; gap: 10px; overflow-x: auto; padding-bottom: 15px; margin-bottom: 24px; scrollbar-width: none; }
         .categories-wrapper::-webkit-scrollbar { display: none; }
         .cat-btn { min-width: max-content; background: transparent; border: none; border-radius: 100px; padding: 8px 20px; text-align: center; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px; color: var(--text-muted); box-shadow: none; }
+        .cat-btn.active { background: #0a0a0a; color: #ffffff; box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); }
         .cat-btn.active { border-color: #000; background: #000; color: #ffffff; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); }
         .cat-icon { display: inline-flex; align-items: center; justify-content: center; }
         .cat-label { font-size: 0.9rem; font-weight: 800; }
@@ -199,8 +223,29 @@
         .cal-highlight ul li { position: relative; padding-left: 20px; margin-bottom: 10px; }
         .cal-highlight ul li::before { content: "•"; position: absolute; left: 0; color: #8b00ff; font-weight: 900; font-size: 1.2rem; line-height: 1;}
 
-        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: calc(100% - 32px); max-width: 400px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-radius: 100px; border: 1px solid rgba(255, 255, 255, 0.8); display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; z-index: 9999; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #94a3b8; background: transparent; border: none; font-size: 0.75rem; font-weight: 700; cursor: pointer; flex: 1; transition: 0.3s; padding: 10px 0; border-radius: 100px; box-shadow: none; min-width: 70px; }
+        /* Ajuste responsivo para la barra de navegación inferior */
+        .bottom-nav { 
+            position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); 
+            width: calc(100% - 20px); max-width: 450px; /* Un poco más ancha para que quepan */
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); 
+            border-radius: 100px; border: 1px solid rgba(255, 255, 255, 0.8); 
+            display: flex; align-items: center; justify-content: flex-start; /* flex-start para permitir scroll si rebasa */
+            padding: 6px 10px; z-index: 9999; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08); 
+            overflow-x: auto; /* Permite deslizar si no caben */
+            scrollbar-width: none; /* Oculta la barra de scroll en Firefox */
+        }
+        .bottom-nav::-webkit-scrollbar { display: none; } /* Oculta la barra de scroll en Chrome/Safari */
+        
+        .nav-item { 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; 
+            color: #94a3b8; background: transparent; border: none; 
+            font-size: 0.65rem; /* Texto más pequeño */
+            font-weight: 700; cursor: pointer; flex: 1; transition: 0.3s; 
+            padding: 8px 4px; border-radius: 100px; box-shadow: none; 
+            min-width: 55px; /* Menor ancho mínimo para que quepan más botones */
+            white-space: nowrap; /* Evita que el texto se parta en dos líneas */
+        }
+        .nav-item svg { width: 20px; height: 20px; } /* Íconos ligeramente más pequeños */
         .nav-item.active { 
             background: #000000; /* Fondo negro como en tu foto */
             color: #ffffff; 
@@ -753,49 +798,61 @@
                 renderizarNotificaciones(); // Inyectar al HTML
             }
 
-            // 📡 ANTENA 1: Escucha Anuncios Globales (Para toda la academia)
-            db.ref('sistema/notificaciones_globales').on('value', snap => {
+            // 📡if (snap.exists()) { ANTENA 1: Escucha Anuncios Globales (Para toda la academia)
+           db.ref('sistema/notificaciones_globales').on('value', snap => {
                 globales = [];
-                if (snap.exists()) {
-                    snap.forEach(child => {
-                        const data = child.val();
-                        globales.push({
-                            id: child.key,
-                            tipo: data.tipo || 'promociones', // Pestaña Promociones
-                            titulo: data.titulo || 'Anuncio Oficial',
-                            cuerpo: data.cuerpo || '',
-                            fechaStr: data.fechaStr || 'Reciente',
-                            tiempoRelativo: data.tiempoRelativo || 'Hace un momento',
-                            color: data.color || 'purple',
-                            iconoSVG: data.iconoSVG || `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 12v10H4V12"></path><path d="M2 7h20v5H2z"></path><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg>`
+               
+                    const historial = snap.val();
+                    const ahora = (typeof obtenerFechaSistema === "function") ? obtenerFechaSistema() : new Date();
+
+                    Object.values(historial).forEach(examen => {
+                        // Asegurar que sea un objeto válido
+                        if (!examen || typeof examen !== 'object') return;
+                        
+                        // Parseo de fecha a prueba de fallos (Si no lee la fecha, usará la actual para no ocultarlo)
+                        let ts = examen.timestamp || examen.id_historial;
+                        let fechaExamen = ahora; 
+                        
+                        if (ts) {
+                            if (!isNaN(ts)) fechaExamen = new Date(parseInt(ts));
+                            else if (typeof ts === 'string') fechaExamen = new Date(ts);
+                        }
+                        if (isNaN(fechaExamen.getTime())) fechaExamen = ahora;
+
+                        const yaRealizado = examen.resultados && examen.resultados[codigoActual];
+                        
+                        // REGLA CLAVE: Ignorar exámenes futuros que no se han respondido aún
+                        if (ahora < fechaExamen && !yaRealizado) return;
+
+                        totalExamenesBD++;
+                        
+                        let mesExamen = fechaExamen.getMonth() + 1;
+                        if (mesExamen < 9) mesExamen = 9;
+                        if (mesExamen > 12) mesExamen = 12;
+                        
+                        let miResultado = null;
+                        let notaParaPromedio = 0;
+
+                        if (yaRealizado) {
+                            miResultado = examen.resultados[codigoActual];
+                            notaParaPromedio = parseFloat(miResultado.nota);
+                            realizados++;
+                            if (notaParaPromedio >= 6.0) aprobados++; 
+                        } else {
+                            miResultado = { nota: 0, correctas: 0, total: (examen.preguntas ? examen.preguntas.length : 10), missed: true };
+                            notaParaPromedio = 0;
+                        }
+
+                        sumaNotasGlobal += notaParaPromedio;
+
+                        examenesPorMes[mesExamen].push({
+                            ...examen,
+                            titulo: examen.titulo || examen.nombre || "Evaluación " + mesExamen,
+                            miResultado: miResultado,
+                            fechaObj: fechaExamen
                         });
                     });
                 }
-                sincronizarBandeja();
-            });
-
-            // 📡 ANTENA 2: Escucha Mensajes Personales (Admin -> Estudiante específico)
-            db.ref(`clase/${codigoActual}/notificaciones`).on('value', snap => {
-                personales = [];
-                if (snap.exists()) {
-                    snap.forEach(child => {
-                        const data = child.val();
-                        personales.push({
-                            id: child.key,
-                            tipo: data.tipo || 'mensajes', // Pestaña Mensajes
-                            titulo: data.titulo || 'Soporte ELEGIDOS',
-                            cuerpo: data.cuerpo || '',
-                            fechaStr: data.fechaStr || 'Reciente',
-                            tiempoRelativo: data.tiempoRelativo || 'Hace un momento',
-                            color: data.color || 'blue',
-                            iconoSVG: data.iconoSVG || `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>`
-                        });
-                    });
-                }
-                sincronizarBandeja();
-            });
-        }
-
         </script>
 
     <script>
@@ -942,13 +999,39 @@
                 </select>
 
                 <button onclick="asignarBoletosMasivos()" class="btn-main" id="btn-asignar-masivo" style="max-width: 100%; margin: 0 auto; background: linear-gradient(90deg, #ea580c 0%, #f97316 100%) !important; box-shadow: 0 15px 30px rgba(234, 88, 12, 0.3) !important;">Asignar a Todos</button>
-                <p id="msg-asignacion-masiva" style="font-size: 0.85rem; font-weight: 700; margin-top: 15px; display: none;"></p>
+                <<p id="msg-asignacion-masiva" style="font-size: 0.85rem; font-weight: 700; margin-top: 15px; display: none;"></p>
+            </div>
+
+            <!-- TARJETA 4: REINICIO DE PERMISOS Y ASISTENCIAS -->
+            <div class="calendar-card" style="background: white; padding: 30px 20px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-top: 20px; border: 1px solid var(--border-light);">
+                <div style="background: linear-gradient(135deg, #ef4444, #b91c1c); width: 60px; height: 60px; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; color: white;">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </div>
+                <h3 style="font-size: 1.2rem; font-weight: 900; margin-bottom: 10px;">Limpiar Permisos / Asistencias</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">Borra los permisos antiguos bugeados o reinicia a 0 la asistencia de un alumno (Ej: 001).</p>
+                
+                <input type="text" id="input-admin-reset-codigo" class="input-field" placeholder="Dígitos del alumno (Ej: 001)" style="max-width: 100%; margin-bottom: 15px; padding: 12px; font-size: 0.9rem; text-align: center;">
+                
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button onclick="adminResetearPermisos()" class="btn-main" style="flex: 1; min-width: 130px; margin: 0; background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%) !important; font-size: 0.85rem;">Limpiar Permisos</button>
+                    <button onclick="adminResetearAsistencias()" class="btn-main" style="flex: 1; min-width: 130px; margin: 0; background: linear-gradient(90deg, #ef4444 0%, #b91c1c 100%) !important; font-size: 0.85rem;">Borrar Asistencias</button>
+                </div>
+                <p id="msg-admin-reset" style="font-size: 0.85rem; font-weight: 700; margin-top: 15px; display: none;"></p>
             </div>
 
             <button onclick="cerrarSesion()" class="btn-main" style="max-width: 100%; margin-top: 30px; background: #ef4444 !important; box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);">Cerrar Sesión</button>
         </div>
 
-        
+        <!-- OVERLAY DE LA RULETA (FRONTEND GLOBAL) -->
+        <div id="ruleta-overlay" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(25px); z-index: 9999999; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+            <div id="ruleta-container" style="animation: ruletaAparece 0.5s ease-out; width: 100%; max-width: 600px; padding: 20px;">
+                <h2 id="ruleta-titulo" style="color: #ff00c8; font-size: 1.5rem; font-weight: 900; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 30px; text-shadow: 0 5px 15px rgba(255,0,200,0.5);">Buscando ganador...</h2>
+                <div id="ruleta-nombre-ganador" class="ruleta-nombre-item" style="border-top: 2px solid rgba(255,255,255,0.1); border-bottom: 2px solid rgba(255,255,255,0.1); padding: 30px 10px;">
+                    INICIANDO
+                </div>
+            </div>
+            <button onclick="cerrarRuleta()" id="btn-cerrar-ruleta" class="btn-main" style="display: none; margin-top: 50px; background: #ffffff !important; color: #000000 !important; max-width: 250px; font-weight: 900;">Cerrar Pantalla</button>
+        </div>
 
         <!-- LÓGICA ESTRUCTURAL DE LA RULETA (VERSIÓN PROFESIONAL) -->
         <script>
@@ -1069,30 +1152,41 @@
     <div id="dashboard-screen">
         
       <!-- SIDEBAR / BOTTOM NAV -->
-        <div class="bottom-nav">
-            <img src="ELEGIDOS_INSTITUCIONAL_NEGRO.png" alt="ELEGIDOS" class="logo-desktop" style="display: none;">
-            
-            <button class="nav-item active" onclick="cambiarSeccion('clases', 0)">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                <span class="nav-txt">Clases</span>
-            </button>
-            <button class="nav-item" onclick="cambiarSeccion('boletos', 1)">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 3h16a2 2 0 0 1 2 2v6a3 3 0 0 0 0 6v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6a3 3 0 0 0 0-6V5a2 2 0 0 1 2-2z"></path><line x1="9" y1="3" x2="9" y2="21"></line></svg>
-                <span class="nav-txt">Boletos</span>
-            </button>
-            <button class="nav-item" onclick="cambiarSeccion('qr', 2)">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                <span class="nav-txt">Mi QR</span>
-            </button>
-            <button class="nav-item" onclick="cambiarSeccion('recursos', 3)">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-                <span class="nav-txt">Más</span>
-            </button>
-            <button class="nav-item" onclick="cambiarSeccion('perfil', 4)">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                <span class="nav-txt">Perfil</span>
-            </button>
-        </div>
+      <div class="bottom-nav">
+    <img src="ELEGIDOS_INSTITUCIONAL_NEGRO.png" alt="ELEGIDOS" class="logo-desktop" style="display: none;">
+    
+    <button class="nav-item active" onclick="cambiarSeccion('clases', 0)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        <span class="nav-txt">Clases</span>
+    </button>
+    <button class="nav-item" onclick="cambiarSeccion('boletos', 1)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 3h16a2 2 0 0 1 2 2v6a3 3 0 0 0 0 6v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6a3 3 0 0 0 0-6V5a2 2 0 0 1 2-2z"></path><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+        <span class="nav-txt">Boletos</span>
+    </button>
+    <button class="nav-item" onclick="cambiarSeccion('qr', 2)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+        <span class="nav-txt">Mi QR</span>
+    </button>
+    <button class="nav-item" onclick="cambiarSeccion('recursos', 3)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+        <span class="nav-txt">Más</span>
+    </button>
+    
+    <!-- NUEVA SECCIÓN DE PROYECTOS Y VOLUNTARIADO -->
+    <button class="nav-item" onclick="cambiarSeccion('voluntariado', 4)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        <span class="nav-txt">Proyectos</span>
+    </button>
+
+    <button class="nav-item" onclick="cambiarSeccion('evaluaciones', 5)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+        <span class="nav-txt">Evaluaciones</span>
+    </button>
+    <button class="nav-item" onclick="cambiarSeccion('perfil', 6)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        <span class="nav-txt">Perfil</span>
+    </button>
+</div>
 
         <div class="main-scroll-area">
             <div class="top-header">
@@ -1119,19 +1213,48 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </div>
 
-                <!-- BANNER BOTÓN RULETA EN VIVO (CATEDRÁTICO O ADMIN ACTIVA) -->
-                <div id="banner-ruleta-live" onclick="abrirRuletaPantallaCompleta()" style="display: none; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #8b00ff 0%, #ff00c8 100%); border: 1px solid rgba(255, 255, 255, 0.5); padding: 20px 24px; border-radius: 24px; margin-top: 15px; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 30px rgba(255, 0, 200, 0.35); animation: pulseRuleta 2s infinite;">
+               <!-- BANNER DINÁMICO DE RULETA EN VIVO (GRUPAL O INDIVIDUAL) -->
+<div id="banner-ruleta-live" onclick="abrirRuletaPantallaCompleta()" style="display: none; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #8b00ff 0%, #ff00c8 100%); border: 1px solid rgba(255, 255, 255, 0.5); padding: 20px 24px; border-radius: 24px; margin-top: 15px; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 30px rgba(255, 0, 200, 0.35); animation: pulseRuleta 2s infinite;">
+    <div style="display: flex; align-items: center; gap: 16px;">
+        <div style="width: 48px; height: 48px; border-radius: 50%; background: #ffffff; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 15px rgba(0,0,0,0.2); flex-shrink: 0; font-size: 1.5rem;">
+            🎡
+        </div>
+        <div style="color: #ffffff; font-size: 1rem; font-weight: 800; line-height: 1.3;">
+            <span id="titulo-banner-ruleta">Ruleta en Vivo</span><br>
+            <span id="txt-banner-ruleta" style="color: #fbcfe8; font-size: 0.85rem; font-weight: 700;">¡Sorteo activo! Haz clic para abrir</span>
+        </div>
+    </div>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+</div>
+
+                <!-- BANNER BOTÓN VALIDAR ASISTENCIA (APARECE CON LA SEÑAL DEL ADMIN) -->
+                <div id="banner-pin-live" onclick="abrirPopUpAsistencia()" style="display: none; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: 1px solid rgba(255, 255, 255, 0.5); padding: 20px 24px; border-radius: 24px; margin-top: 15px; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.35); animation: pulseRuleta 2s infinite;">
                     <div style="display: flex; align-items: center; gap: 16px;">
                         <div style="width: 48px; height: 48px; border-radius: 50%; background: #ffffff; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 15px rgba(0,0,0,0.2); flex-shrink: 0; font-size: 1.5rem;">
-                            🎡
+                            🔑
                         </div>
-                        <div style="color: #ffffff; font-size: 1rem; font-weight: 800; line-height: 1.3;">
+                        <<div style="color: #ffffff; font-size: 1rem; font-weight: 800; line-height: 1.3;">
                             Ruleta en Vivo<br>
                             <span id="txt-banner-ruleta" style="color: #fbcfe8; font-size: 0.85rem; font-weight: 700;">¡Sorteo activo! Haz clic para abrir</span>
                         </div>
                     </div>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </div>
+
+                <!-- BANNER BOTÓN VALIDAR ASISTENCIA (APARECE CON LA SEÑAL DEL ADMIN) -->
+                <div id="banner-pin-live" onclick="abrirPopUpAsistencia()" style="display: none; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: 1px solid rgba(255, 255, 255, 0.5); padding: 20px 24px; border-radius: 24px; margin-top: 15px; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.35); animation: pulseRuleta 2s infinite;">
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <div style="width: 48px; height: 48px; border-radius: 50%; background: #ffffff; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 15px rgba(0,0,0,0.2); flex-shrink: 0; font-size: 1.5rem;">
+                            🔑
+                        </div>
+                        <div style="color: #ffffff; font-size: 1rem; font-weight: 800; line-height: 1.3;">
+                            Pase de Asistencia<br>
+                            <span style="color: #d1fae5; font-size: 0.85rem; font-weight: 700;">Toca para ingresar el PIN de la clase</span>
+                        </div>
+                    </div>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+
             </div>
 
             <div class="content-area">
@@ -1170,43 +1293,43 @@
 
                     <!-- ENLACE DE CLASE ONLINE (MIÉRCOLES) -->
 
-                    <div id="meet-banner-container" style="display: none; background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 16px; padding: 20px; margin-bottom: 24px; text-align: center;">
+                   <div id="meet-banner-container" style="display: none; background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 16px; padding: 20px; margin-bottom: 24px; text-align: center;">
                         <h4 style="color: var(--purple-main); font-weight: 800; font-size: 1.1rem; margin-bottom: 5px;">🎥 Clase en Vivo Activa</h4>
                         <p style="font-size: 0.85rem; color: #4338ca; margin-bottom: 15px;">La sala de Google Meet está abierta.</p>
-                        <a href="#" onclick="registrarIngresoMeet('https://meet.google.com/wvh-nhwv-uga'); return false;" style="background: var(--purple-main); color: #fff; padding: 12px 24px; border-radius: 12px; font-weight: 800; text-decoration: none; display: inline-block; box-shadow: 0 4px 10px rgba(147, 51, 234, 0.3);">Unirse a la Clase</a>
+                        <a href="#" onclick="registrarIngresoMeet('https://meet.google.com/uyh-gitm-dkr'); return false;" style="background: var(--purple-main); color: #fff; padding: 12px 24px; border-radius: 12px; font-weight: 800; text-decoration: none; display: inline-block; box-shadow: 0 4px 10px rgba(147, 51, 234, 0.3);">Unirse a la Clase</a>
+                    </div>
+
+                    <!-- CAJA PERMANENTE DE ASISTENCIA VIRTUAL -->
+                    <div class="calendar-card" style="padding: 20px; border: 1px solid var(--purple-main); background: rgba(139, 0, 255, 0.03); margin-bottom: 24px; border-radius: 20px; box-shadow: 0 4px 15px rgba(139,0,255,0.05);">
+                        <h4 style="color: var(--purple-main); font-weight: 800; font-size: 1.1rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                            Validar Asistencia Virtual
+                        </h4>
+                        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px; line-height: 1.4;">Ingresa el PIN de 4 dígitos dado en clase. <strong>Nota:</strong> Solo te dejará registrarte si has entrado a la videollamada desde el portal.</p>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="number" id="input-pin-permanente" class="input-field" placeholder="0000" style="margin-bottom: 0; padding: 12px; font-size: 1.2rem; letter-spacing: 6px; font-weight: 900; text-align: center; flex: 1;">
+                            <button class="btn-main" id="btn-validar-permanente" onclick="validarPinPermanente()" style="margin-top: 0; padding: 12px 20px; flex: 1; max-width: max-content;">Validar</button>
+                        </div>
+                        <p id="msg-pin-permanente" style="font-size: 0.85rem; font-weight: 700; margin-top: 12px; display: none; text-align: center; padding: 10px; border-radius: 8px;"></p>
                     </div>
 
                     <script>
                         // Función para consultar grabación (Solo abre si ya pasaron 2 días completos y si hay link desde ADMIN)
                         function abrirGrabacionClase(fechaClaseISO, urlYoutubeAdmin) {
-                            if (!urlYoutubeAdmin || urlYoutubeAdmin.trim() === "" || urlYoutubeAdmin === "#") {
-                                return; // Si no hay link cargado desde ADMIN, no hace nada
-                            }
-
+                            if (!urlYoutubeAdmin || urlYoutubeAdmin.trim() === "" || urlYoutubeAdmin === "#") return;
                             const fechaClase = new Date(fechaClaseISO);
                             const ahora = new Date();
-                            
-                            // Suma 2 días (48 horas) a la fecha de la clase
                             const fechaHabilitacion = new Date(fechaClase.getTime() + (2 * 24 * 60 * 60 * 1000));
-
-                            if (ahora >= fechaHabilitacion) {
-                                window.open(urlYoutubeAdmin, "_blank");
-                            }
+                            if (ahora >= fechaHabilitacion) window.open(urlYoutubeAdmin, "_blank");
                         }
                         
                         function verGrabacion(fechaFinalizacion, urlGrabacion) {
                             const fechaFin = new Date(fechaFinalizacion);
                             const ahora = new Date();
-                            
-                            if (ahora > fechaFin) {
-                                window.open(urlGrabacion, "_blank");
-                            }
+                            if (ahora > fechaFin) window.open(urlGrabacion, "_blank");
                         }
                     </script>
 
-                                           
-
-                    <!-- TARJETA/PESTAÑA: MIS CALIFICACIONES Y ASISTENCIAS -->
                     <!-- TARJETA/PESTAÑA: MIS CALIFICACIONES Y ASISTENCIAS -->
                     <div class="promo-card" onclick="abrirMisCalificaciones()" style="display: flex; align-items: center; justify-content: space-between; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.15); padding: 20px 24px; border-radius: 24px; margin-bottom: 24px; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
                         <div style="display: flex; align-items: center; gap: 16px;">
@@ -1229,22 +1352,112 @@
                             </div>
                             <div style="font-size: 1.3rem; font-weight: 900;">Historial de Clases</div>
                         </div>
-                        <button style="background: #fff; border: 1px solid var(--border-light); color: var(--purple-main); font-weight: 800; font-size: 0.8rem; padding: 10px 18px; border-radius: 100px; display: flex; align-items: center; gap: 4px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.04);">Ver todas <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
                     </div>               
 
-                    <div class="class-list" id="contenedor-clases"></div>
+                    <div class="class-list" id="contenedor-clases" style="margin-bottom: 35px;"></div>
+                    
+                    
+
+                    </div> <!-- Cerramos la pestaña de Clases -->
+
+                <!-- VISTA NUEVA: EVALUACIONES -->
+                <div id="tab-evaluaciones" class="tab-content">
+                    <div class="section-header" style="margin-top: 10px;">
+                        <div style="display: flex; align-items: center; gap: 14px;">
+                            <div style="width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg, #ef4444, #b91c1c); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                            </div>
+                            <div style="font-size: 1.3rem; font-weight: 900;">Mis Evaluaciones</div>
+                        </div>
+                    </div>
+                    
+                  <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 8px;">
+                        <div class="stat-card" style="background: rgba(239, 68, 68, 0.05); border-color: rgba(239, 68, 68, 0.2);">
+                            <div class="num" id="stat-examenes-total" style="color: #b91c1c; font-size: 1.4rem;">0</div>
+                            <div class="label" style="color: #ef4444;">Exámenes Realizados</div>
+                        </div>
+                        <div class="stat-card" style="background: rgba(59, 130, 246, 0.05); border-color: rgba(59, 130, 246, 0.2);">
+                            <div class="num" id="stat-examenes-promedio" style="color: #1d4ed8; font-size: 1.4rem;">0.0</div>
+                            <div class="label" style="color: #3b82f6;">Promedio de Exámenes</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px;">
+                        <div class="stat-card" style="background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.2);">
+                            <div class="num" id="stat-examenes-pct" style="color: #047857; font-size: 1.4rem;">0%</div>
+                            <div class="label" style="color: #10b981;">Tasa de Aprobación</div>
+                        </div>
+                        <div class="stat-card" style="background: rgba(139, 92, 246, 0.05); border-color: rgba(139, 92, 246, 0.2);">
+                            <div class="num" id="stat-nota-global-proyectada" style="color: #7c3aed; font-size: 1.4rem; font-weight: 900;">0.0</div>
+                            <div class="label" style="color: #8b5cf6;">Nota Global Proyectada</div>
+                        </div>
+                    </div>
+                    <p style="font-size: 0.7rem; color: var(--text-muted); text-align: center; margin-bottom: 15px; font-style: italic;">* La Nota Global Proyectada promedia tus evaluaciones y asistencia. Recuerda que el Proyecto Final tendrá un peso importante en tu nota final.</p>
+                    <div class="class-list" id="contenedor-examenes" style="margin-bottom: 40px;">
+                        <p style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 20px; border-radius: 16px; border: 1px dashed #cbd5e1; background: rgba(0,0,0,0.02);">Cargando evaluaciones...</p>
+                    </div>
                 </div>
 
-<!-- VISTA NUEVA: BOLETOS ESPECIALES -->
+<!-- VISTA NUEVA: BOLETOS Y PROGRAMA DE LEALTAD -->
                 <div id="tab-boletos" class="tab-content">
                     
+                    <!-- 🌟 PROGRAMA DE LEALTAD Y RECOMPENSAS EXCLUSIVAS ELEGIDOS -->
+                    <div style="margin-top: 10px; margin-bottom: 35px; background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); padding: 24px; border-radius: 28px; color: #fff; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 15px 35px rgba(0,0,0,0.2);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <div>
+                                <h3 style="font-size: 1.3rem; font-weight: 900; color: #fbbf24; margin: 0;">🌟 Programa de Lealtad</h3>
+                                <p style="font-size: 0.75rem; color: #a5b4fc; margin-top: 2px;">Premios por asistencia, puntualidad y notas</p>
+                            </div>
+                            <div style="background: rgba(251, 191, 36, 0.15); border: 1px solid #fbbf24; padding: 8px 14px; border-radius: 100px; text-align: center;">
+                                <span style="font-size: 0.65rem; color: #fde68a; font-weight: 800; display: block; text-transform: uppercase;">Puntos Mensuales</span>
+                                <strong id="display-puntos-lealtad" style="font-size: 1.2rem; color: #fbbf24;">0 pts</strong>
+                            </div>
+                        </div>
+
+                        <!-- LISTA DE PREMIOS -->
+                        <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 20px;">
+                            <!-- PREMIO NIVEL 1 -->
+                            <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                                <div>
+                                    <span style="font-size: 0.65rem; background: #3b82f6; color: #fff; padding: 3px 8px; border-radius: 100px; font-weight: 800;">NIVEL 1</span>
+                                    <h4 style="font-size: 0.95rem; font-weight: 900; color: #fff; margin: 4px 0 2px 0;">Pack Stickers Oficiales</h4>
+                                    <p style="font-size: 0.75rem; color: #94a3b8; margin: 0;">Motivación inicial para primeras semanas.</p>
+                                    <span style="font-size: 0.8rem; font-weight: 900; color: #fbbf24; display: block; margin-top: 4px;">400 Puntos</span>
+                                </div>
+                                <button onclick="canjearRecompensa('stickers', 400)" class="btn-main" style="margin: 0; padding: 10px 16px; font-size: 0.8rem; min-width: 100px; max-width: 100px; background: #3b82f6 !important;">Canjear</button>
+                            </div>
+
+                            <!-- PREMIO NIVEL 2 -->
+                            <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                                <div>
+                                    <span style="font-size: 0.65rem; background: #8b5cf6; color: #fff; padding: 3px 8px; border-radius: 100px; font-weight: 800;">NIVEL 2</span>
+                                    <h4 style="font-size: 0.95rem; font-weight: 900; color: #fff; margin: 4px 0 2px 0;">Gorra Oficial ELEGIDOS</h4>
+                                    <p style="font-size: 0.75rem; color: #94a3b8; margin: 0;">Stock: <strong id="stock-gorra" style="color: #4ade80;">3 disp.</strong></p>
+                                    <span style="font-size: 0.8rem; font-weight: 900; color: #fbbf24; display: block; margin-top: 4px;">1,000 Puntos</span>
+                                </div>
+                                <button onclick="canjearRecompensa('gorra', 1000)" class="btn-main" style="margin: 0; padding: 10px 16px; font-size: 0.8rem; min-width: 100px; max-width: 100px; background: #8b5cf6 !important;">Canjear</button>
+                            </div>
+
+                            <!-- PREMIO NIVEL 3 -->
+                            <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                                <div>
+                                    <span style="font-size: 0.65rem; background: #ec4899; color: #fff; padding: 3px 8px; border-radius: 100px; font-weight: 800;">NIVEL 3 (MAX)</span>
+                                    <h4 style="font-size: 0.95rem; font-weight: 900; color: #fff; margin: 4px 0 2px 0;">Camisa Exclusiva del Curso</h4>
+                                    <p style="font-size: 0.75rem; color: #94a3b8; margin: 0;">Stock: <strong id="stock-camisa" style="color: #f472b6;">2 disp.</strong></p>
+                                    <span style="font-size: 0.8rem; font-weight: 900; color: #fbbf24; display: block; margin-top: 4px;">2,000 Puntos</span>
+                                </div>
+                                <button id="btn-canje-camisa" onclick="canjearRecompensa('camisa', 2000)" class="btn-main" style="margin: 0; padding: 10px 16px; font-size: 0.8rem; min-width: 100px; max-width: 100px; background: #ec4899 !important;">Canjear</button>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- SECCIÓN 1: BOLETOS VIRTUALES ASIGNADOS POR ADMIN -->
-                    <div style="margin-top: 10px; margin-bottom: 40px;">
-                        <div class="section-header" style="font-size: 1.4rem; color: var(--purple-main);">✨ Boletos Virtuales</div>
-                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Entradas digitales que la academia te ha regalado o asignado directamente.</p>
+                    <div style="margin-top: 10px; margin-bottom: 35px;">
+                        <div class="section-header" style="font-size: 1.4rem; color: var(--purple-main);">✨ Boletos Virtuales Asignados</div>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Entradas digitales asignadas directamente a tu cuenta por la academia.</p>
                         
                         <div id="contenedor-boletos-virtuales">
-                            <!-- Aquí aparecerán los boletos enviados por el ADMIN -->
+                            <!-- Aquí se mostrarán las tarjetas de boletos virtuales -->
                         </div>
                     </div>
 
@@ -1256,7 +1469,7 @@
                         <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Vincula los códigos de tus entradas físicas de papel para validarlas digitalmente.</p>
                         
                         <div class="calendar-card" style="margin-top: 0; padding: 20px; border: 1px solid #e2e8f0;">
-                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px; text-align: center;">Escanea el código QR de tu entrada física.</p>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px; text-align: center;">Escanea el código QR o ingresa el código manual de tu entrada física.</p>
                             
                             <!-- Contenedor de la cámara para tickets -->
                             <div id="qr-reader-boletos" style="width: 100%; border-radius: 16px; overflow: hidden; margin-bottom: 15px; display: none;"></div>
@@ -1293,27 +1506,38 @@
                     </div>
                 </div>
 
-               <!-- NUEVA VISTA 4: RETO SEMANAL -->
-                <div id="tab-reto" class="tab-content">
-                    <div id="reto-loading" style="display: flex; justify-content: center; align-items: center; height: 60vh;">
-                        <img src="LOGO CURSO FOTOGRAFIA DIGITAL.png" style="width: 100px; animation: splashPulse 1.5s infinite ease-in-out; filter: drop-shadow(0 0 20px rgba(147,51,234,0.4));" onerror="this.style.display='none'">
-                    </div>
-                    
-                    <div id="reto-active" style="display: none;">
-                        <div class="section-header">🔥 Reto Dominical</div>
-                        <div class="calendar-card" style="text-align: center; margin-top: 0;">
-                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Escanea el código QR de un compañero diferente cada domingo para ganar puntos sociales y conocer a la comunidad.</p>
-                            
-                            <h2 style="color: var(--text-dark); font-size: 3rem; margin-bottom: 0px;" id="puntos-sociales">0</h2>
-                            <p style="font-size: 0.75rem; color: var(--purple-main); text-transform: uppercase; font-weight: 800; margin-bottom: 20px;">Puntos de Interacción</p>
-                            
-                            <div id="qr-reader" style="width: 100%; border-radius: 16px; overflow: hidden; margin-bottom: 15px; display: none;"></div>
-                            
-                            <button class="btn-main" id="btn-abrir-escaner" onclick="abrirEscanerReto()" style="max-width: 100%; padding: 14px; font-size: 0.9rem;">📷 Activar Cámara y Escanear</button>
-                            
-                            <input type="text" id="input-reto-manual" class="input-field" placeholder="O ingresa el código (Ej: CLASE-2026-001)" style="margin-top: 15px; max-width: 100%;">
-                            <button class="btn-main" onclick="registrarRetoManual()" style="max-width: 100%; padding: 14px; font-size: 0.9rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">Validar Código Manual</button>
+              <!-- VISTA 4: PROYECTOS Y VOLUNTARIADO (EN MANTENIMIENTO) -->
+                <div id="tab-voluntariado" class="tab-content">
+                    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; height: 65vh; padding: 20px;">
+                        
+                        <!-- Icono de engranaje animado (Efecto cargando) -->
+                        <div style="margin-bottom: 24px; animation: splashPulse 1.5s infinite ease-in-out; color: var(--purple-main);">
+                            <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                            </svg>
                         </div>
+                        
+                        <div style="background: rgba(139, 0, 255, 0.05); border: 1px dashed rgba(139, 0, 255, 0.3); padding: 25px 20px; border-radius: 24px;">
+                            <h2 style="font-size: 1.8rem; font-weight: 900; color: var(--text-dark); margin-bottom: 8px;">EN MANTENIMIENTO</h2>
+                            <h3 style="font-size: 1.05rem; color: var(--purple-main); font-weight: 800; margin-bottom: 16px; line-height: 1.4;">Sistema de Inscripción a Proyectos y Voluntariado</h3>
+                            
+                            <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; font-weight: 500;">
+                                Pronto esta será la sección donde encontrarán oportunidades exclusivas y podrán aplicar para ser parte con <strong>ELEGIDOS en proyectos</strong>.
+                            </p>
+                        </div>
+
+                        <!-- Barra de progreso simulada cargando -->
+                        <div style="width: 200px; height: 6px; background: #e2e8f0; border-radius: 100px; margin-top: 40px; overflow: hidden; position: relative;">
+                            <div style="width: 40%; height: 100%; background: linear-gradient(90deg, var(--purple-main), var(--pink-accent)); border-radius: 100px; animation: loadingBarProyectos 1.5s infinite ease-in-out;"></div>
+                        </div>
+                        <style>
+                            @keyframes loadingBarProyectos {
+                                0% { transform: translateX(-100%); }
+                                100% { transform: translateX(250%); }
+                            }
+                        </style>
+                        <p style="font-size: 0.75rem; color: #94a3b8; font-weight: 700; margin-top: 12px; text-transform: uppercase; letter-spacing: 2px;">Cargando Módulos...</p>
                     </div>
                 </div>
 
@@ -1451,39 +1675,70 @@
     firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // --- INICIO ANTENA SILENCIOSA ---
+        // --- INICIO ANTENA SILENCIOSA CON DETECCIÓN DE PESTAÑA ACTIVA ---
         (function() {
             let antenaActiva = false;
-            
-            // Verificador en segundo plano (cada 3 segundos) para detectar el inicio de sesión
+            let refPresencia = null;
+
+            // Función que detecta si el usuario está viendo la pestaña o se fue
+            function manejarVisibilidadPestana() {
+                const codigoActual = localStorage.getItem("elegidos_student_code");
+                if (!codigoActual || !refPresencia) return;
+
+                if (document.hidden) {
+                    // Si se cambió de pestaña o minimizó -> Quitar de online
+                    refPresencia.remove();
+                    db.ref('clase/' + codigoActual).update({
+                        online: false,
+                        ultima_conexion: firebase.database.ServerValue.TIMESTAMP
+                    });
+                } else {
+                    // Si volvió a la pestaña del portal -> Volver a poner online
+                    refPresencia.set({
+                        estado: 'online',
+                        inicio_sesion: firebase.database.ServerValue.TIMESTAMP
+                    });
+                    db.ref('clase/' + codigoActual).update({
+                        online: true,
+                        ultima_conexion: firebase.database.ServerValue.TIMESTAMP
+                    });
+                }
+            }
+
+            // Escuchar cambios de pestaña o minimización de navegador
+            document.addEventListener("visibilitychange", manejarVisibilidadPestana);
+
             setInterval(() => {
                 const codigoActual = localStorage.getItem("elegidos_student_code");
-                
+
                 if (codigoActual && !antenaActiva) {
                     antenaActiva = true;
-                   // Crear un ID de sesión único (si entras en dos dispositivos, son dos sesiones distintas)
                     const sessionID = Math.random().toString(36).substring(2, 10);
-                    // Ruta individual por sesión
-                    const refPresencia = db.ref('/estudiantes_online/' + codigoActual + '/' + sessionID);
-                    
-                    // Conexión con el sistema nativo de presencia de Firebase
+                    refPresencia = db.ref('/estudiantes_online/' + codigoActual + '/' + sessionID);
+
                     db.ref('.info/connected').on('value', function(snapshot) {
                         if (snapshot.val() === false) return;
-                        
-                        // Si el usuario cierra la pestaña, remueve la sesión. (No pone a offline a toda la cuenta, solo a este dispositivo).
+
                         refPresencia.onDisconnect().remove().then(() => {
-                            // Si está conectado, inyectar datos de sesión activa
-                            refPresencia.set({
-                                estado: 'online',
-                                inicio_sesion: firebase.database.ServerValue.TIMESTAMP
-                            });
+                            db.ref('clase/' + codigoActual + '/online').onDisconnect().set(false);
+                            db.ref('clase/' + codigoActual + '/ultima_conexion').onDisconnect().set(firebase.database.ServerValue.TIMESTAMP);
+
+                            if (!document.hidden) {
+                                refPresencia.set({
+                                    estado: 'online',
+                                    inicio_sesion: firebase.database.ServerValue.TIMESTAMP
+                                });
+                                db.ref('clase/' + codigoActual).update({ online: true });
+                            } else {
+                                manejarVisibilidadPestana();
+                            }
                         });
                     });
                 } else if (!codigoActual && antenaActiva) {
-                    // Si el localStorage se vacía (cierre de sesión)
-                    antenaActiva = false; 
+                    antenaActiva = false;
+                    refPresencia = null;
                 }
-            }, 3000); 
+            }, 3000);
         })();
         // --- FIN ANTENA SILENCIOSA ---
 
@@ -1528,7 +1783,7 @@
     let datosEstudianteActual = null;
     let esInvitado = false;
     let fotoPerfilBase64 = null;
-    let fotoPermisoBase64 = null;
+    let fotoPermisoBase64 = null; // <-- Variable agregada para evitar que el botón se congele
 
     function formatearFecha(fechaString) {
         const opciones = { weekday: 'short', day: 'numeric', month: 'short' };
@@ -1822,20 +2077,32 @@ localStorage.removeItem("elegidos_is_admin");
         });
     }
 
-    // --- MOTOR DE SIMULACIÓN DE FECHA PARA MODO PRUEBA / ADMIN ---
+    // --- MOTOR DE SIMULACIÓN DE FECHA Y HORA COMPLETO ---
     function obtenerFechaSistema() {
         const fechaSim = localStorage.getItem("fecha_simulada_admin");
+        const horaSim = localStorage.getItem("hora_simulada_admin");
+        
+        let d = new Date(new Date().toLocaleString("en-US", {timeZone: "America/El_Salvador"}));
+        
         if (fechaSim) {
-            return new Date(fechaSim);
+            const parts = fechaSim.split("-");
+            d.setFullYear(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
         }
-        return new Date(new Date().toLocaleString("en-US", {timeZone: "America/El_Salvador"}));
+        if (horaSim) {
+            const hParts = horaSim.split(":");
+            d.setHours(parseInt(hParts[0], 10), parseInt(hParts[1], 10), 0, 0);
+        }
+        return d;
     }
 
-    function cambiarFechaSimulada(nuevaFechaStr) {
-        if (!nuevaFechaStr) {
-            localStorage.removeItem("fecha_simulada_admin");
-        } else {
-            localStorage.setItem("fecha_simulada_admin", nuevaFechaStr.includes("T") ? nuevaFechaStr : nuevaFechaStr + "T12:00:00");
+    function cambiarFechaSimulada(nuevaFechaStr, nuevaHoraStr) {
+        if (nuevaFechaStr !== undefined && nuevaFechaStr !== null) {
+            if (!nuevaFechaStr) localStorage.removeItem("fecha_simulada_admin");
+            else localStorage.setItem("fecha_simulada_admin", nuevaFechaStr);
+        }
+        if (nuevaHoraStr !== undefined && nuevaHoraStr !== null) {
+            if (!nuevaHoraStr) localStorage.removeItem("hora_simulada_admin");
+            else localStorage.setItem("hora_simulada_admin", nuevaHoraStr);
         }
         window.location.reload();
     }
@@ -1854,10 +2121,12 @@ localStorage.removeItem("elegidos_is_admin");
 
             connectedRef.on('value', (snap) => {
               if (snap.val() === true) {
-                userRef.update({
-                  online: true,
-                  ultima_conexion: firebase.database.ServerValue.TIMESTAMP
-                });
+                if (!document.hidden) {
+                  userRef.update({
+                    online: true,
+                    ultima_conexion: firebase.database.ServerValue.TIMESTAMP
+                  });
+                }
 
                 userRef.child('online').onDisconnect().set(false);
                 userRef.child('ultima_conexion').onDisconnect().set(firebase.database.ServerValue.TIMESTAMP);
@@ -1865,7 +2134,8 @@ localStorage.removeItem("elegidos_is_admin");
             });
 
             cargarNotificacionesGlobales();
-            iniciarEscuchaRuletaGlobal(); // <--- Activa la recepción inmediata de la Ruleta al iniciar sesión
+            iniciarEscuchaRuletaGlobal();
+            iniciarRelojAsistenciaVirtual();
         }
 
         const nombre = data.nombre ? data.nombre.toLowerCase() : "estudiante";
@@ -1953,6 +2223,7 @@ localStorage.removeItem("elegidos_is_admin");
 
         renderizarListaClases();
         renderizarBoletosVinculados();
+        if (typeof renderizarMisExamenes === 'function') renderizarMisExamenes();
 
         if (!esInvitado && (!data.perfil || !data.perfil.foto || !data.perfil.edad || !data.perfil.comunidad || !data.perfil.nivel || !data.perfil.desc)) {
             setTimeout(() => {
@@ -1985,9 +2256,7 @@ localStorage.removeItem("elegidos_is_admin");
         if (asistenciasData) {
             FECHAS_CURSO.forEach((item, idx) => {
                 let asistioAqui = asistenciasData[item.id] || asistenciasData[item.fecha];
-                if (item.fecha === "2026-10-04" && asistenciasData["evento_elegidos"]) asistioAqui = true;
-                if ((item.fecha === "2026-10-25" || item.fecha === "2026-10-27") && asistenciasData["evento_masterclass"]) asistioAqui = true;
-                if (item.fecha === "2026-11-08" && asistenciasData["evento_festival"]) asistioAqui = true;
+                // ELIMINADA: La validación que regalaba asistencia solo por tener un evento asignado.
                 if (asistioAqui) ultimaClaseAsistidaIndex = idx;
             });
         }
@@ -1998,13 +2267,7 @@ localStorage.removeItem("elegidos_is_admin");
 
             let horaIngreso = asistenciasData ? (asistenciasData[item.id] || asistenciasData[item.fecha]) : null;
 
-            // SINCRONIZACIÓN REAL DE ASISTENCIA POR BOLETO: 
-// Si el alumno tiene el boleto asignado, automáticamente cuenta como asistencia a la clase presencial.
-if (datosEstudianteActual && datosEstudianteActual.accesos_especiales) {
-    if (item.fecha === "2026-10-04" && (datosEstudianteActual.accesos_especiales["elegidos"] || datosEstudianteActual.accesos_especiales["mahu"])) horaIngreso = "🎟️ Boleto Validado";
-    if ((item.fecha === "2026-10-25" || item.fecha === "2026-10-27") && (datosEstudianteActual.accesos_especiales["masterclass"] || datosEstudianteActual.accesos_especiales["dreamez"])) horaIngreso = "🎟️ Boleto Validado";
-    if (item.fecha === "2026-11-08" && datosEstudianteActual.accesos_especiales["festival"]) horaIngreso = "🎟️ Boleto Validado";
-}
+           
 
             const fechaActualSV = obtenerFechaSistema();
             const hoyStr = fechaActualSV.getFullYear() + '-' + String(fechaActualSV.getMonth() + 1).padStart(2, '0') + '-' + String(fechaActualSV.getDate()).padStart(2, '0');
@@ -2027,19 +2290,27 @@ if (datosEstudianteActual && datosEstudianteActual.accesos_especiales) {
             let statusBadge = ""; 
             let timeInfo = "";
 
+            let permisoPendiente = datosEstudianteActual && datosEstudianteActual.permisos_solicitados && datosEstudianteActual.permisos_solicitados[item.id];
+
             if (horaIngreso) {
-                if (String(horaIngreso).toLowerCase().includes("permiso")) {
+                const ingresoStr = String(horaIngreso).trim();
+                // Validamos estrictamente que la base de datos diga que es un Permiso (Solo si el admin lo aprobó en 'asistencias')
+                if (ingresoStr.toLowerCase().startsWith("permiso")) {
                     permisos++;
-                    statusBadge = `<span class="status-badge" style="background: #fff7ed; color: #ea580c; border: 1px solid #ffedd5;">Permiso</span>`; 
-                    timeInfo = `<span style="color:#ea580c; font-weight:700;">Justificado:</span> ${horaIngreso.replace('Permiso:', '').trim()}`;
+                    statusBadge = `<span class="status-badge" style="background: #fff7ed; color: #ea580c; border: 1px solid #ffedd5;">Permiso Aprobado</span>`; 
+                    timeInfo = `<span style="color:#ea580c; font-weight:700;">Justificado:</span> ${ingresoStr.replace(/^Permiso:/i, '').trim()}`;
                 } else {
                     asistidas++; 
                     rachaActual++;
                     if(rachaActual > rachaMaxima) rachaMaxima = rachaActual;
                     statusBadge = `<span class="status-badge status-ok">Asistió</span>`; 
-                    timeInfo = `<span style="color:#16a34a; font-weight:700;">Hora de llegada:</span> ${horaIngreso}`;
+                    timeInfo = `<span style="color:#16a34a; font-weight:700;">Hora de llegada:</span> ${ingresoStr}`;
                 }
             } 
+            else if (permisoPendiente) {
+                statusBadge = `<span class="status-badge" style="background: #f1f5f9; color: #64748b; border: 1px dashed #cbd5e1;">En Revisión</span>`;
+                timeInfo = `<span style="color:#64748b; font-weight:700;">Permiso enviado:</span> Esperando al Admin`;
+            }
             else if (esHoy) {
                 if (fechaActualSV >= horaInicioVentana && fechaActualSV <= horaFinVentana) {
                     statusBadge = `<span class="status-badge status-today">Activa</span>`; 
@@ -2073,7 +2344,7 @@ if (datosEstudianteActual && datosEstudianteActual.accesos_especiales) {
                 htmlTitulo = `${item.nombre || item.titulo} — ${formatearFecha(item.fecha)} <br><span style="font-size: 0.9rem; color: #8b00ff; font-weight: 800;">${temaDinamico}</span>`;
             }
 
-           const colorIcono = idx % 2 === 0 ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : 'linear-gradient(135deg, #ec4899, #f43f5e)';
+          const colorIcono = idx % 2 === 0 ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : 'linear-gradient(135deg, #ec4899, #f43f5e)';
             row.innerHTML = `
                 <div class="class-icon" style="background: ${colorIcono};">
                     <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
@@ -2082,7 +2353,7 @@ if (datosEstudianteActual && datosEstudianteActual.accesos_especiales) {
                     <h5>${htmlTitulo}</h5>
                     <p style="margin-bottom: 4px;">${timeInfo}</p>
                     <div class="meta-tags">
-                        <span class="meta-tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> ${item.modalidad === 'Online' ? 'Por Zoom' : 'Presencial'}</span>
+                        <span class="meta-tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> ${item.modalidad === 'Online' ? 'Por Meet' : 'Presencial'}</span>
                         <span class="meta-tag"><span class="tag-dot" style="background: ${item.modalidad === 'Online' ? '#2563eb' : '#ec4899'};"></span>${textoModalidad}</span>
                     </div>
                 </div>
@@ -2126,52 +2397,109 @@ if (datosEstudianteActual && datosEstudianteActual.accesos_especiales) {
         document.getElementById("progress-text").innerText = porcentajeProgreso + "%";
         document.getElementById("progress-fill").style.width = porcentajeProgreso + "%";
 
-        const fechaSV = obtenerFechaSistema();
-        const hoy = fechaSV.getFullYear() + '-' + String(fechaSV.getMonth() + 1).padStart(2, '0') + '-' + String(fechaSV.getDate()).padStart(2, '0');
+        // Evaluamos la visibilidad del botón de clase en vivo
+        if (typeof evaluarVisibilidadMeet === "function") {
+            evaluarVisibilidadMeet();
+        }
+    }
+
+    // =========================================================
+    // SISTEMA HÍBRIDO DEL BOTÓN MEET (AUTOMÁTICO + MANUAL ADMIN)
+    // =========================================================
+    let antenaMeetActiva = false;
+    window.datosMeetAdmin = null;
+
+    function iniciarListenerMeetPortal() {
+        if (antenaMeetActiva) return;
+        antenaMeetActiva = true;
+
+        // Escucha en tiempo real si el Admin activa o desactiva manualmente
+        db.ref('sistema/meet_live').on('value', snap => {
+            window.datosMeetAdmin = snap.val();
+            evaluarVisibilidadMeet();
+        });
+
+        // Reevalúa cada 1 minuto por si entra en el horario automático
+        setInterval(evaluarVisibilidadMeet, 60000);
+    }
+
+    window.evaluarVisibilidadMeet = function() {
         const meetContainer = document.getElementById("meet-banner-container");
-        
+        const btnMeet = meetContainer ? meetContainer.querySelector('a') : null;
+        const codigoActual = localStorage.getItem("elegidos_student_code");
+
+        if (!meetContainer || !codigoActual) return;
+
         let mostrarMeet = false;
+        let urlFinal = 'https://meet.google.com/yzu-agci-fbe'; // Enlace por defecto
+
+        // 1. EVALUACIÓN AUTOMÁTICA (Horario normal de la academia)
+        const fechaSV = typeof obtenerFechaSistema === 'function' ? obtenerFechaSistema() : new Date();
+        const hoyStr = fechaSV.getFullYear() + '-' + String(fechaSV.getMonth() + 1).padStart(2, '0') + '-' + String(fechaSV.getDate()).padStart(2, '0');
+        const claseDeHoy = FECHAS_CURSO.find(c => c.fecha === hoyStr && c.modalidad === 'Online');
         
-        // ¡ESTE ERA EL ERROR FATAL (hoyMeet -> hoy)! 
-const claseDeHoy = FECHAS_CURSO.find(c => c.fecha === hoy && c.modalidad === 'Online');
         if (claseDeHoy) {
-            const horaApertura = new Date(`${hoy}T19:45:00`); 
-            const horaCierre = new Date(`${hoy}T21:00:00`); 
-            
+            const horaApertura = new Date(`${hoyStr}T19:45:00`); 
+            const horaCierre = new Date(`${hoyStr}T21:00:00`); 
             if (fechaSV >= horaApertura && fechaSV <= horaCierre) {
                 mostrarMeet = true;
             }
         }
 
-        if (mostrarMeet) {
-            if (meetContainer) meetContainer.style.display = "block";
-        } else {
-            if (meetContainer) meetContainer.style.display = "none";
-        }
-    }
+        // 2. EVALUACIÓN MANUAL DEL ADMIN (Sobrescribe la automática si está activa)
+        if (window.datosMeetAdmin && window.datosMeetAdmin.activo === true) {
+            const data = window.datosMeetAdmin;
+            let soyObjetivo = false;
+            
+            if (data.target === "todos") soyObjetivo = true;
+            if (data.target === "online") soyObjetivo = true; // Si recibe señal, está online
+            if (data.target === "especifico" && data.targetCodigo === codigoActual) soyObjetivo = true;
 
+            if (soyObjetivo) {
+                mostrarMeet = true;
+                if (data.url) urlFinal = data.url; // Reemplaza con el link que envíe el Admin
+            }
+        }
+
+        // 3. APLICAR CAMBIOS VISUALES
+        if (mostrarMeet) {
+            meetContainer.style.display = "block";
+            if (btnMeet) {
+                btnMeet.onclick = function() {
+                    registrarIngresoMeet(urlFinal);
+                    return false;
+                };
+            }
+        } else {
+            meetContainer.style.display = "none";
+        }
+    };
+
+    // Aseguramos que la antena inicie cuando carga la página
+    document.addEventListener("DOMContentLoaded", () => {
+        setTimeout(iniciarListenerMeetPortal, 2500); 
+    });
     // =========================================================
     // SISTEMA DE BOLETOS VINCULADOS (ANIMADO Y DEFINITIVO)
     // =========================================================
     let antenaBoletosActiva = false;
 
     function renderizarBoletosVinculados() {
-    const codigoEstudiante = localStorage.getItem("elegidos_student_code");
-    if (!codigoEstudiante) return;
+        const codigoEstudiante = localStorage.getItem("elegidos_student_code");
+        if (!codigoEstudiante) return;
 
-    if (!antenaBoletosActiva) {
-        antenaBoletosActiva = true;
-        db.ref(`clase/${codigoEstudiante}/boletos`).on('value', snap => {
-            if (!datosEstudianteActual) {
-                datosEstudianteActual = { boletos: {} };
-            }
-            datosEstudianteActual.boletos = snap.exists() ? snap.val() : {};
+        if (!antenaBoletosActiva) {
+            antenaBoletosActiva = true;
+            db.ref(`clase/${codigoEstudiante}/boletos`).on('value', snap => {
+                if (datosEstudianteActual) {
+                    datosEstudianteActual.boletos = snap.exists() ? snap.val() : {};
+                    construirInterfazBoletosElegidos();
+                }
+            });
+        } else {
             construirInterfazBoletosElegidos();
-        });
-    } else {
-        construirInterfazBoletosElegidos();
+        }
     }
-}
 
     function construirInterfazBoletosElegidos() {
     const contenedorFisicos = document.getElementById("contenedor-boletos");
@@ -2181,7 +2509,6 @@ const claseDeHoy = FECHAS_CURSO.find(c => c.fecha === hoy && c.modalidad === 'On
     contenedorFisicos.innerHTML = ""; 
     contenedorVirtuales.innerHTML = ""; 
 
-    // Mensajes de "Vacío" personalizados
     const msgVacioFisico = `
         <div style="background: rgba(255,255,255,0.5); padding: 30px; border-radius: 20px; text-align: center; border: 1px dashed #cbd5e1;">
             <p style="color: #64748b; font-size: 0.95rem; font-weight: 600; margin: 0;">No has escaneado ningún boleto físico aún.</p>
@@ -2197,7 +2524,6 @@ const claseDeHoy = FECHAS_CURSO.find(c => c.fecha === hoy && c.modalidad === 'On
         return;
     }
 
-    // Normalizar si viene como Arreglo o como Objeto desde el ADMIN
     let listaBoletos = [];
     if (Array.isArray(datosEstudianteActual.boletos)) {
         listaBoletos = datosEstudianteActual.boletos.map((item, idx) => {
@@ -2222,19 +2548,114 @@ const claseDeHoy = FECHAS_CURSO.find(c => c.fecha === hoy && c.modalidad === 'On
         return;
     }
 
-    
+    const codigoEstudiante = localStorage.getItem("elegidos_student_code") || "";
+    const numEstudiante = codigoEstudiante.split('-').pop();
+    const fechaActualSV = typeof obtenerFechaSistema === 'function' ? obtenerFechaSistema() : new Date();
+    const hoyStr = fechaActualSV.getFullYear() + '-' + String(fechaActualSV.getMonth() + 1).padStart(2, '0') + '-' + String(fechaActualSV.getDate()).padStart(2, '0');
+
+    // Mapeo con nombres de archivo exactos de tu GitHub
+    const DETALLES_EVENTOS = {
+        'elegidos': { titulo: "MASTERCLASS MAHU / ELEGIDOS", fecha: "2026-10-04", fechaTxt: "04 de Octubre, 2026 • 15:00 hrs", colorBorder: "#0284c7", colorFondoPill: "linear-gradient(135deg, #0284c7, #0ea5e9)", imgDiseno: "ticket MAHU.jpg" },
+        'mahu': { titulo: "MASTERCLASS MAHU / ELEGIDOS", fecha: "2026-10-04", fechaTxt: "04 de Octubre, 2026 • 15:00 hrs", colorBorder: "#0284c7", colorFondoPill: "linear-gradient(135deg, #0284c7, #0ea5e9)", imgDiseno: "ticket MAHU.jpg" },
+        'masterclass': { titulo: "MASTERCLASS DREAMEZ", fecha: "2026-10-25", fechaTxt: "25 de Octubre, 2026 • 15:00 hrs", colorBorder: "#16a34a", colorFondoPill: "linear-gradient(135deg, #16a34a, #22c55e)", imgDiseno: "ticket DREAMEZ.jpg.jpg" },
+        'dreamez': { titulo: "MASTERCLASS DREAMEZ", fecha: "2026-10-25", fechaTxt: "25 de Octubre, 2026 • 15:00 hrs", colorBorder: "#16a34a", colorFondoPill: "linear-gradient(135deg, #16a34a, #22c55e)", imgDiseno: "ticket DREAMEZ.jpg.jpg" },
+        'festival': { titulo: "FESTIVAL CREATIVO ELEGIDOS", fecha: "2026-11-08", fechaTxt: "08 de Noviembre, 2026 • 13:00 hrs", colorBorder: "#eab308", colorFondoPill: "linear-gradient(135deg, #eab308, #f59e0b)", imgDiseno: "ticket FESTIVAL.jpg" },
+        'martell': { titulo: "MASTERCLASS MARTELL", fecha: "2026-11-15", fechaTxt: "15 de Noviembre, 2026 • 15:00 hrs", colorBorder: "#8b00ff", colorFondoPill: "linear-gradient(135deg, #8b00ff, #ec4899)", imgDiseno: "ticket MARTELL.jpg" }
+    };
+
+    let conteoVirtuales = 0;
+    let conteoFisicos = 0;
+
+    listaBoletos.forEach(boletoObj => {
+        const codigoBoleto = boletoObj.codigo || "S/N";
+        const evRaw = boletoObj.evento || boletoObj.eventoId || boletoObj.evento_id || boletoObj.nombre || boletoObj.nombreEvento || boletoObj.tipo || "";
+        const evKey = String(evRaw).toLowerCase().trim();
+
+        const infoEv = DETALLES_EVENTOS[evKey] || {
+            titulo: evKey ? evKey.toUpperCase() : "EVENTO ESPECIAL",
+            fecha: hoyStr,
+            fechaTxt: "Fecha confirmada en sistema",
+            colorBorder: "#8b00ff",
+            colorFondoPill: "linear-gradient(135deg, #8b00ff, #ff00c8)",
+            imgDiseno: "ticket MAHU.jpg"
+        };
+
+        const esAsignadoAdmin = codigoBoleto.endsWith("-" + numEstudiante) || codigoBoleto.startsWith("VIRTUAL-") || boletoObj.tipo === "virtual";
+        const tipoTexto = esAsignadoAdmin ? "Boleto Digital Asignado" : "Boleto Vinculado";
+        const icono = esAsignadoAdmin ? "✨" : "🎟️";
+
+        const esUsado = boletoObj.usado || (datosEstudianteActual.asistencias && (datosEstudianteActual.asistencias[infoEv.fecha] || datosEstudianteActual.asistencias[`evento_${evKey}`]));
+        const esPasado = hoyStr > infoEv.fecha;
+        const esHoy = hoyStr === infoEv.fecha;
+
+        let badgeEstadoHtml = "";
+        if (esUsado) {
+            badgeEstadoHtml = `<div style="background: #15803d; border: 1px solid #86efac; padding: 12px; border-radius: 12px; margin-bottom: 15px; text-align: center;">
+                <p style="font-size: 0.85rem; color: #86efac; font-weight: 800; margin: 0;">✅ TICKET USADO (Entrada Registrada)</p></div>`;
+        } else if (esPasado) {
+            badgeEstadoHtml = `<div style="background: #450a0a; border: 1px solid #fca5a5; padding: 12px; border-radius: 12px; margin-bottom: 15px; text-align: center;">
+                <p style="font-size: 0.85rem; color: #fca5a5; font-weight: 800; margin: 0;">⏳ EVENTO FINALIZADO (${infoEv.fechaTxt.split('•')[0]})</p></div>`;
+        } else if (esHoy) {
+            badgeEstadoHtml = `<div style="background: #7c2d12; border: 1px solid #fdba74; padding: 12px; border-radius: 12px; margin-bottom: 15px; text-align: center;">
+                <p style="font-size: 0.85rem; color: #fdba74; font-weight: 800; margin: 0;">🔥 ¡EL EVENTO ES HOY! Presenta este ticket al ingresar.</p></div>`;
+        } else {
+            badgeEstadoHtml = `<div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 12px; border-radius: 12px; margin-bottom: 15px; text-align: center;">
+                <p style="font-size: 0.85rem; color: #16a34a; font-weight: 800; margin: 0;">🟢 Ticket Válido y Asistencia Garantizada</p></div>`;
+        }
+
+        const animacionDiv = esAsignadoAdmin ? "animation: pulseRuleta 2s infinite alternate; border-width: 3px;" : "box-shadow: 0 10px 25px rgba(0,0,0,0.05);";
+        const glowVirtual = esAsignadoAdmin ? `<div style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: ${infoEv.colorBorder}; filter: blur(50px); opacity: 0.15; pointer-events: none;"></div>` : "";
+
+        // Uso seguro de encodeURI para resolver enlaces con espacios en GitHub/Vercel
+        const urlImagenCodificada = encodeURI(infoEv.imgDiseno);
+
+        const card = document.createElement("div");
+        card.style.cssText = `background: #ffffff; border: 2px solid ${infoEv.colorBorder}; border-radius: 24px; padding: 24px; margin-bottom: 20px; position: relative; overflow: hidden; ${animacionDiv}`;
+        
+        card.innerHTML = `
+            ${glowVirtual}
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; position: relative; z-index: 2; flex-wrap: wrap; gap: 8px;">
+                <h4 style="margin: 0; color: #0f172a; font-size: 1.1rem; text-transform: uppercase; font-weight: 900; letter-spacing: -0.5px;">${infoEv.titulo}</h4>
+                <span style="background: ${infoEv.colorFondoPill}; color: white; padding: 6px 12px; border-radius: 100px; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">${icono} ${tipoTexto}</span>
+            </div>
+            
+            <p style="font-size: 0.85rem; color: #475569; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                📅 <span>Fecha: ${infoEv.fechaTxt}</span>
+            </p>
+
+            <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 6px; font-weight: 700; position: relative; z-index: 2;">CÓDIGO OFICIAL:</p>
+            <div style="background: #f8fafc; border: 1px dashed #cbd5e1; padding: 12px; border-radius: 12px; text-align: center; margin-bottom: 20px; position: relative; z-index: 2;">
+                <span style="font-family: monospace; color: ${infoEv.colorBorder}; font-size: 1.15rem; font-weight: 900; letter-spacing: 1px;">${codigoBoleto}</span>
+            </div>
+            
+            ${badgeEstadoHtml}
+
+            <button onclick="window.open('${urlImagenCodificada}', '_blank')" style="width: 100%; padding: 16px; border-radius: 100px; background: #000; color: #ffffff; border: none; font-size: 0.95rem; font-weight: 900; cursor: pointer; transition: transform 0.2s; position: relative; z-index: 2; box-shadow: 0 10px 20px rgba(0,0,0,0.2);">🎟️ Ver Diseño Oficial</button>
+        `;
+        
+        if (esAsignadoAdmin) {
+            contenedorVirtuales.appendChild(card);
+            conteoVirtuales++;
+        } else {
+            contenedorFisicos.appendChild(card);
+            conteoFisicos++;
+        }
+    });
+
+    if (conteoFisicos === 0) contenedorFisicos.innerHTML = msgVacioFisico;
+    if (conteoVirtuales === 0) contenedorVirtuales.innerHTML = msgVacioVirtual;
+}
     
     function mostrarImagenBoleto(codigo, eventoId) {
         const evLower = (eventoId || "").toLowerCase().trim();
         let imgName = "ticket MAHU.jpg"; // Por defecto
         
-        if (evLower.includes("dreamez") || evLower.includes("masterclass")) imgName = "ticket DREAMEZ.jpg";
+        if (evLower.includes("dreamez") || evLower.includes("masterclass")) imgName = "ticket DREAMEZ.jpg.jpg";
         if (evLower.includes("festival")) imgName = "ticket FESTIVAL.jpg";
         if (evLower.includes("roberto") || evLower.includes("martell")) imgName = "ticket MARTELL.jpg";
         
         window.open(imgName, "_blank");
     }
-
     function cambiarSeccion(tab, index) {
         // Apagar la alerta de "¡NUEVO!" al entrar a los boletos
         if (tab === 'boletos') {
@@ -2269,8 +2690,8 @@ const claseDeHoy = FECHAS_CURSO.find(c => c.fecha === hoy && c.modalidad === 'On
                         else if(faltaFoto) alert("📸 Ya casi terminas: Solo te falta subir tu fotografía para continuar.");
                         else if(faltaTexto) alert("📝 Ya casi terminas: Llena los campos de texto faltantes en tu perfil para continuar.");
                         
-                        tab = 'perfil';
-                        index = 4; 
+                       tab = 'perfil';
+                        index = 5; 
                     }
                 }
             }
@@ -2447,20 +2868,23 @@ const claseDeHoy = FECHAS_CURSO.find(c => c.fecha === hoy && c.modalidad === 'On
         }
     }
 
-    function llenarSelectPermisos() {
+function llenarSelectPermisos() {
         const select = document.getElementById("permiso-fecha");
         if (!select) return;
         select.innerHTML = '<option value="">Selecciona la clase a faltar...</option>';
-        
-        FECHAS_CURSO.forEach(clase => {
-            const option = document.createElement("option");
-            option.value = clase.id;
-            option.textContent = `${clase.nombre || clase.titulo} (${clase.fecha})`;
-            select.appendChild(option);
-        });
-    }
 
-    function enviarPermiso() {
+        const ahora = typeof obtenerFechaSistema === 'function' ? obtenerFechaSistema() : new Date();
+        const hoyStr = ahora.getFullYear() + '-' + String(ahora.getMonth() + 1).padStart(2, '0') + '-' + String(ahora.getDate()).padStart(2, '0');
+
+        FECHAS_CURSO.forEach(clase => {
+            if (clase.fecha >= hoyStr) {
+                const option = document.createElement("option");
+                option.value = clase.id;
+                option.text = `${clase.nombre || clase.titulo} - ${formatearFecha(clase.fecha)}`;
+                select.appendChild(option);
+            }
+        });
+    }    function enviarPermiso() {
         if (!navigator.onLine) return alert("📡 Estás desconectado. Necesitas internet para enviar el permiso.");
         
         const codigo = localStorage.getItem("elegidos_student_code");
@@ -2492,12 +2916,19 @@ const claseDeHoy = FECHAS_CURSO.find(c => c.fecha === hoy && c.modalidad === 'On
                 return;
             }
         }
+
+        if (datosEstudianteActual && datosEstudianteActual.permisos_solicitados && datosEstudianteActual.permisos_solicitados[claseId]) {
+            alert("❌ SOLICITUD RECHAZADA: Ya enviaste un permiso para esta clase y actualmente está en revisión.");
+            document.getElementById("permiso-fecha").value = "";
+            llenarSelectPermisos();
+            return;
+        }
         
         btn.disabled = true;
         btn.innerText = "⏳ Enviando Solicitud...";
         
         const updates = {};
-        updates[`clase/${codigo}/asistencias/${claseId}`] = "Permiso: " + razon;
+        // Eliminamos el auto-registro en 'asistencias'. Solo lo guardamos en 'permisos_solicitados'
         updates[`clase/${codigo}/permisos_solicitados/${claseId}`] = {
             razon: razon,
             foto: fotoPermisoBase64 || "",
@@ -2506,18 +2937,20 @@ const claseDeHoy = FECHAS_CURSO.find(c => c.fecha === hoy && c.modalidad === 'On
         };
         
         db.ref().update(updates).then(() => {
-            alert("✅ Permiso enviado correctamente.");
+            alert("✅ Permiso enviado. Tu solicitud está 'En Revisión' por el equipo ELEGIDOS.");
             document.getElementById("permiso-razon").value = "";
             document.getElementById("permiso-foto").value = "";
             fotoPermisoBase64 = null;
             btn.disabled = false;
             btn.innerText = "Enviar Solicitud";
             
-            if(!datosEstudianteActual.asistencias) datosEstudianteActual.asistencias = {};
-            datosEstudianteActual.asistencias[claseId] = "Permiso: " + razon;
+            if(!datosEstudianteActual.permisos_solicitados) datosEstudianteActual.permisos_solicitados = {};
+            datosEstudianteActual.permisos_solicitados[claseId] = { razon: razon };
             
-           renderizarListaClases();
-renderizarCalificacionesYAsistencias(); // <--- AGREGAR ESTA LÍNEA AQUÍ
+            renderizarListaClases();
+            if (typeof renderizarCalificacionesYAsistencias === 'function') {
+                renderizarCalificacionesYAsistencias(); 
+            }
             llenarSelectPermisos(); 
         }).catch(e => {
             alert("Error al enviar permiso (Fallo de red): " + e);
@@ -2549,7 +2982,7 @@ renderizarCalificacionesYAsistencias(); // <--- AGREGAR ESTA LÍNEA AQUÍ
         escanerReto = new Html5Qrcode("qr-reader");
         escanerReto.start(
             { facingMode: "environment" },
-            { fps: 10, qrbox: 250 },
+{ fps: 15, qrbox: { width: 250, height: 250 } },
             codigoQR => {
                 // Detiene la cámara e inmediatamente llama la función
                 if (escanerReto) {
@@ -2582,8 +3015,7 @@ renderizarCalificacionesYAsistencias(); // <--- AGREGAR ESTA LÍNEA AQUÍ
         escanerBoletos = new Html5Qrcode("qr-reader-boletos");
         escanerBoletos.start(
             { facingMode: "environment" },
-            { fps: 15, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
-            (decodedText) => {
+{ fps: 15, qrbox: { width: 250, height: 250 } },            (decodedText) => {
                 if (escanerBoletos) {
                     // Detener cámara y limpiar la vista HTML
                     escanerBoletos.stop().then(() => {
@@ -2694,9 +3126,13 @@ renderizarCalificacionesYAsistencias(); // <--- AGREGAR ESTA LÍNEA AQUÍ
             const opcionesSV = { timeZone: "America/El_Salvador" };
             const fechaFalsaSV = new Date(horaVerdaderaServidor.toLocaleString("en-US", opcionesSV));
             
-            if(fechaFalsaSV.getDay() !== 0) {
+            const esAdminTesting = localStorage.getItem("elegidos_is_admin") === "true";
+            const tieneFechaSimulada = localStorage.getItem("fecha_simulada_admin") !== null;
+            const fechaEvaluada = (esAdminTesting || tieneFechaSimulada) ? obtenerFechaSistema() : fechaFalsaSV;
+
+            if(fechaEvaluada.getDay() !== 0) {
                 if(btn) { btn.disabled = false; btn.innerText = "Validar Código Manual"; }
-                return alert("⚠️ ACCESO DENEGADO: El Reto Social solo se puede realizar los días Domingo. (Validado mediante el reloj global del servidor).");
+                return alert("⚠️ ACCESO DENEGADO: El Reto Social solo se puede realizar los días Domingo.");
             }
 
             db.ref('clase/' + codigoEscaneado).once('value').then(snap => {
@@ -2804,18 +3240,23 @@ renderizarCalificacionesYAsistencias(); // <--- AGREGAR ESTA LÍNEA AQUÍ
 
         db.ref('configuracion/calendarioClases').on('value', snap => {
             let listaCombinadaMap = new Map();
-            // Usamos la clave por 'id' para permitir MÚLTIPLES y NUEVAS fechas sin bloqueos
-            FECHAS_CURSO_BASE.forEach(clase => { listaCombinadaMap.set(clase.id, JSON.parse(JSON.stringify(clase))); });
+            
+            // ELIMINADA LA CARGA DE CLASES BASE. AHORA FIREBASE MANDA AL 100%
             if (snap.exists()) {
                 const data = snap.val();
                 Object.keys(data).forEach(key => {
                     const itemFirebase = data[key];
                     if (!itemFirebase.fecha) return;
                     const nombreClase = itemFirebase.titulo || itemFirebase.nombre || "Nueva Clase";
-                    const datosNuevos = { id: key, fecha: itemFirebase.fecha, hora: itemFirebase.hora || "15:00", nombre: nombreClase, expositor: itemFirebase.ponente || itemFirebase.expositor || "Equipo ELEGIDOS", modalidad: itemFirebase.modalidad || "Presencial", tema: itemFirebase.tema || "" };
-                    listaCombinadaMap.set(key, { ...(listaCombinadaMap.get(key) || {}), ...datosNuevos });
+                    
+                    let horaCorregida = itemFirebase.hora || "15:00";
+                    if (itemFirebase.modalidad === 'Online' && (!itemFirebase.hora || itemFirebase.hora === "15:00")) horaCorregida = "20:00";
+                    
+                    const datosNuevos = { id: key, fecha: itemFirebase.fecha, hora: horaCorregida, nombre: nombreClase, expositor: itemFirebase.ponente || itemFirebase.expositor || "Equipo ELEGIDOS", modalidad: itemFirebase.modalidad || "Presencial", tema: itemFirebase.tema || "" };
+                    listaCombinadaMap.set(key, datosNuevos);
                 });
             }
+            
             FECHAS_CURSO = Array.from(listaCombinadaMap.values());
             FECHAS_CURSO.sort((a, b) => new Date(`${a.fecha}T${a.hora}`) - new Date(`${b.fecha}T${b.hora}`));
             if (typeof datosEstudianteActual !== 'undefined' && datosEstudianteActual) { renderizarListaClases(); if (typeof llenarSelectPermisos === 'function') llenarSelectPermisos(); }
@@ -2868,6 +3309,10 @@ renderizarCalificacionesYAsistencias(); // <--- AGREGAR ESTA LÍNEA AQUÍ
                 db.ref('clase/' + savedCode).on('value', (snap) => {
                     if (snap.exists()) {
                         datosEstudianteActual = snap.val();
+                        // Garantizar que si el Admin borró o reinició asistencias, se limpie el objeto local
+                        if (!datosEstudianteActual.asistencias) {
+                            datosEstudianteActual.asistencias = {};
+                        }
                         localStorage.setItem("elegidos_cache_" + savedCode, JSON.stringify(datosEstudianteActual));
                         
                         if(datosEstudianteActual.perfil && datosEstudianteActual.perfil.color) {
@@ -2877,16 +3322,23 @@ renderizarCalificacionesYAsistencias(); // <--- AGREGAR ESTA LÍNEA AQUÍ
                         
                         cargarDashboard(savedCode, datosEstudianteActual);
                         renderizarListaClases();
+                        if (typeof renderizarCalificacionesYAsistencias === 'function') renderizarCalificacionesYAsistencias();
                         renderizarBoletosVinculados();
                         llenarSelectPermisos();   
                         verificarRetoActivo();
+                    } else {
+                        datosEstudianteActual = { asistencias: {}, boletos: {} };
+                        renderizarListaClases();
+                        if (typeof renderizarCalificacionesYAsistencias === 'function') renderizarCalificacionesYAsistencias();
                     }
                 });
             }
         }
 
-        // --- INICIALIZAR ESCUCHA EN TIEMPO REAL DE RULETA GLOBAL ---
+      // --- INICIALIZAR ESCUCHAS EN TIEMPO REAL GLOBALES ---
         iniciarEscuchaRuletaGlobal();
+        iniciarEscuchaExamenLive(); // <-- Esta es la antena del examen
+        iniciarListenerMeetPortal(); // <-- Antena del botón Meet híbrido
     };
 
     // =========================================================
@@ -2898,42 +3350,59 @@ renderizarCalificacionesYAsistencias(); // <--- AGREGAR ESTA LÍNEA AQUÍ
 
     // 1. Deja la marca invisible y abre Meet
     window.registrarIngresoMeet = function(url) {
-        const ahora = new Date(new Date().toLocaleString("en-US", {timeZone: "America/El_Salvador"}));
+        const ahora = obtenerFechaSistema();
         const hoy = ahora.getFullYear() + '-' + String(ahora.getMonth() + 1).padStart(2, '0') + '-' + String(ahora.getDate()).padStart(2, '0');
         
         localStorage.setItem('ingreso_meet_' + hoy, 'true'); // ¡Huella registrada!
         window.open(url, "_blank");
     };
 
-    // 2. El vigilante en segundo plano
+   // 2. CONEXIÓN EN TIEMPO REAL CON LA CONSOLA DEL ADMIN
     window.iniciarRelojAsistenciaVirtual = function() {
         if (intervaloReloj) clearInterval(intervaloReloj);
         
-        intervaloReloj = setInterval(() => {
-            const ahora = new Date(new Date().toLocaleString("en-US", {timeZone: "America/El_Salvador"}));
-            const hoy = ahora.getFullYear() + '-' + String(ahora.getMonth() + 1).padStart(2, '0') + '-' + String(ahora.getDate()).padStart(2, '0');
+        // NUEVA ANTENA: Escucha la señal maestra de asistencia en vivo desde el Admin
+        db.ref('sistema/asistencia_live').on('value', snap => {
+            const data = snap.val();
+            const modalPin = document.getElementById('modal-pin-asistencia');
             
-            // Verifica si hoy hay una clase Online
-            const claseDeHoy = FECHAS_CURSO.find(c => c.fecha === hoy && c.modalidad === 'Online');
-            
-            // Si hay clase hoy, y el reloj marca entre las 20:30 y 20:50
-            if (claseDeHoy && ahora.getHours() === 20 && ahora.getMinutes() >= 30 && ahora.getMinutes() <= 50) {
+            // Verificamos si el admin encendió el Pop-up
+            if (data && data.activo === true) {
+                const ahora = typeof obtenerFechaSistema === 'function' ? obtenerFechaSistema() : new Date();
+                const hoyStr = ahora.getFullYear() + '-' + String(ahora.getMonth() + 1).padStart(2, '0') + '-' + String(ahora.getDate()).padStart(2, '0');
                 
-                const entroAMeet = localStorage.getItem('ingreso_meet_' + hoy);
+                // --- VALIDACIÓN DE TARGET (A QUIÉN VA DIRIGIDO) ---
+                const codigoActual = localStorage.getItem("elegidos_student_code");
                 
-                // Si el sistema detecta la huella y no le ha mostrado la alerta aún...
-                if (entroAMeet === 'true' && !popupAsistenciaMostrado) {
-                    
-                    // Asegurarnos de que no tenga ya la asistencia registrada para no molestar
+                let soyObjetivo = false;
+                if (data.target === "todos") soyObjetivo = true;
+                if (data.target === "online") soyObjetivo = true; // Si está leyendo esto, está online
+                if (data.target === "especifico" && data.targetCodigo === codigoActual) soyObjetivo = true;
+                
+                if (!soyObjetivo) return; // Si no soy el objetivo, no me muestro
+                // --------------------------------------------------
+
+                const claseDeHoy = FECHAS_CURSO.find(c => c.fecha === hoyStr && c.modalidad === 'Online');
+                
+                if (claseDeHoy) {
                     const yaAsistio = datosEstudianteActual && datosEstudianteActual.asistencias && datosEstudianteActual.asistencias[claseDeHoy.id];
                     
+                    // Solo invade la pantalla si el estudiante no ha colocado el PIN correcto aún
                     if (!yaAsistio) {
-                        document.getElementById('modal-pin-asistencia').classList.add('activo');
-                        popupAsistenciaMostrado = true; // Apaga el gatillo para esta sesión
+                        if (modalPin) modalPin.classList.add('activo');
+                        popupAsistenciaMostrado = true;
                     }
+                } else {
+                     // Si no hay clase asignada, igual mostramos el pop-up por si el admin está forzándolo
+                     if (modalPin) modalPin.classList.add('activo');
+                     popupAsistenciaMostrado = true;
                 }
+            } else {
+                // Si el Admin apaga el Pop-up (activo === false), se le oculta al estudiante
+                if (modalPin) modalPin.classList.remove('activo');
+                popupAsistenciaMostrado = false;
             }
-        }, 20000); // Revisa silenciosamente cada 20 segundos
+        });
     };
 
     // 3. Validador final contra Firebase
@@ -2954,38 +3423,39 @@ renderizarCalificacionesYAsistencias(); // <--- AGREGAR ESTA LÍNEA AQUÍ
         btn.innerText = "⏳ Validando...";
         msgError.style.display = "none";
 
-        const ahora = new Date(new Date().toLocaleString("en-US", {timeZone: "America/El_Salvador"}));
+        const ahora = typeof obtenerFechaSistema === 'function' ? obtenerFechaSistema() : new Date();
         const hoy = ahora.getFullYear() + '-' + String(ahora.getMonth() + 1).padStart(2, '0') + '-' + String(ahora.getDate()).padStart(2, '0');
 
-        // Cruzar el PIN con el que generó el Admin en Firebase
         db.ref('sistema/asistencia_virtual/' + hoy).once('value').then(snap => {
             const pinReal = snap.val();
             
             if (snap.exists() && String(pinReal) === String(pinIngresado)) {
                 
-                const claseDeHoy = FECHAS_CURSO.find(c => c.fecha === hoy && c.modalidad === 'Online');
-                if (claseDeHoy) {
-                    const codigo = localStorage.getItem("elegidos_student_code");
-                    const horaActualStr = String(ahora.getHours()).padStart(2, '0') + ':' + String(ahora.getMinutes()).padStart(2, '0');
-                    const registro = horaActualStr + " (Asistió Virtualmente)";
+                // BUSCAMOS CUALQUIER CLASE HOY (FLEXIBLE)
+                let claseDeHoy = FECHAS_CURSO.find(c => c.fecha === hoy);
+                const claseId = claseDeHoy ? claseDeHoy.id : hoy;
+                
+                const codigo = localStorage.getItem("elegidos_student_code");
+                const horaActualStr = String(ahora.getHours()).padStart(2, '0') + ':' + String(ahora.getMinutes()).padStart(2, '0');
+                const registro = horaActualStr + " (Asistió Virtualmente)";
+                
+                db.ref(`clase/${codigo}/asistencias/${claseId}`).set(registro).then(() => {
+                    document.getElementById('modal-pin-asistencia').classList.remove('activo');
+                    alert("✅ ¡Asistencia virtual registrada exitosamente!");
                     
-                    db.ref(`clase/${codigo}/asistencias/${claseDeHoy.id}`).set(registro).then(() => {
-                        document.getElementById('modal-pin-asistencia').classList.remove('activo');
-                        alert("✅ ¡Asistencia virtual registrada exitosamente!");
-                        
-                        // Reflejarlo de inmediato en el historial visual
-                        if(!datosEstudianteActual.asistencias) datosEstudianteActual.asistencias = {};
-                        datosEstudianteActual.asistencias[claseDeHoy.id] = registro;
-                        renderizarListaClases();
-                        btn.disabled = false;
-                        btn.innerText = "Validar PIN";
-                    }).catch(e => {
-                        msgError.innerText = "Error de red al guardar. Intenta de nuevo.";
-                        msgError.style.display = "block";
-                        btn.disabled = false;
-                        btn.innerText = "Validar PIN";
-                    });
-                }
+                    if(!datosEstudianteActual.asistencias) datosEstudianteActual.asistencias = {};
+                    datosEstudianteActual.asistencias[claseId] = registro;
+                    if (typeof renderizarListaClases === 'function') renderizarListaClases();
+                    if (typeof renderizarCalificacionesYAsistencias === 'function') renderizarCalificacionesYAsistencias();
+                    btn.disabled = false;
+                    btn.innerText = "Validar PIN";
+                }).catch(e => {
+                    msgError.innerText = "Error de red al guardar. Intenta de nuevo.";
+                    msgError.style.display = "block";
+                    btn.disabled = false;
+                    btn.innerText = "Validar PIN";
+                });
+                
             } else {
                 msgError.innerText = "❌ PIN incorrecto. Revisa la pantalla de Meet.";
                 msgError.style.display = "block";
@@ -3004,8 +3474,8 @@ renderizarCalificacionesYAsistencias(); // <--- AGREGAR ESTA LÍNEA AQUÍ
     window.generarPinParaHoy = function() {
         if (!navigator.onLine) return alert("📡 Sin conexión a internet.");
         
-        const pin = Math.floor(1000 + Math.random() * 9000); // 4 dígitos aleatorios
-        const ahora = new Date(new Date().toLocaleString("en-US", {timeZone: "America/El_Salvador"}));
+        const pin = Math.floor(1000 + Math.random() * 9000);
+        const ahora = obtenerFechaSistema();
         const hoy = ahora.getFullYear() + '-' + String(ahora.getMonth() + 1).padStart(2, '0') + '-' + String(ahora.getDate()).padStart(2, '0');
         
         const btn = document.getElementById('btn-generar-pin');
@@ -3155,9 +3625,7 @@ renderizarCalificacionesYAsistencias(); // <--- AGREGAR ESTA LÍNEA AQUÍ
             let conteoAsignados = 0;
 
             // Recorremos estudiante por estudiante
-           Object.keys(estudiantes).forEach(codigoEstudiante => {
-    // ESTA REGLA EXCLUYE A LOS ADMINS
-    if (codigoEstudiante.startsWith("CLASE-")) {
+            Object.keys(estudiantes).forEach(codigoEstudiante => {
                 // Filtramos para asegurar que sean estudiantes reales
                 if (codigoEstudiante.startsWith("CLASE-")) {
                     // Creamos un código de ticket único VIRTUAL para el alumno
@@ -3204,6 +3672,375 @@ const codigoBoleto = `${prefijo}-2026-${numEstudiante}`;
             msgInfo.innerText = `❌ Ocurrió un error: ${error.message}`;
         });
     };
+
+    // =========================================================
+    // FUNCIÓN DE LIMPIEZA DE PERMISOS Y ASISTENCIAS (ADMIN)
+    // =========================================================
+    window.adminResetearPermisos = function() {
+        const digitos = document.getElementById("input-admin-reset-codigo").value.trim();
+        const msgInfo = document.getElementById("msg-admin-reset");
+        if (!digitos) return alert("Ingresa los dígitos del alumno.");
+        
+        let codigo = "CLASE-2026-" + digitos.padStart(3, '0');
+        if (confirm(`¿Seguro que quieres borrar todos los PERMISOS (solicitados y aprobados) del alumno ${codigo}? Las asistencias normales se mantendrán.`)) {
+            msgInfo.style.display = "block";
+            msgInfo.style.color = "#ea580c";
+            msgInfo.innerText = "Buscando y limpiando permisos...";
+            
+            db.ref(`clase/${codigo}`).once('value').then(snap => {
+                if (!snap.exists()) throw new Error("El alumno no existe.");
+                const data = snap.val();
+                const updates = {};
+                
+                // Borrar permisos_solicitados
+                updates[`clase/${codigo}/permisos_solicitados`] = null;
+                
+                // Buscar dentro de asistencias las que sean permisos fantasma y borrarlas
+                if (data.asistencias) {
+                    Object.keys(data.asistencias).forEach(key => {
+                        if (String(data.asistencias[key]).toLowerCase().startsWith("permiso")) {
+                            updates[`clase/${codigo}/asistencias/${key}`] = null;
+                        }
+                    });
+                }
+                
+                return db.ref().update(updates);
+            }).then(() => {
+                msgInfo.style.color = "#16a34a";
+                msgInfo.innerText = `✅ Permisos de ${codigo} limpiados exitosamente.`;
+                setTimeout(() => msgInfo.style.display = 'none', 4000);
+            }).catch(e => {
+                msgInfo.style.color = "#dc2626";
+                msgInfo.innerText = `❌ Error: ${e.message}`;
+            });
+        }
+    };
+
+    window.adminResetearAsistencias = function() {
+        const digitos = document.getElementById("input-admin-reset-codigo").value.trim();
+        const msgInfo = document.getElementById("msg-admin-reset");
+        if (!digitos) return alert("Ingresa los dígitos del alumno.");
+        
+        let codigo = "CLASE-2026-" + digitos.padStart(3, '0');
+        if (confirm(`🚨 ADVERTENCIA: ¿Seguro que quieres borrar TODAS LAS ASISTENCIAS del alumno ${codigo}? Esto lo dejará en 0 faltas y 0 asistencias.`)) {
+            msgInfo.style.display = "block";
+            msgInfo.style.color = "#ef4444";
+            msgInfo.innerText = "Borrando asistencias...";
+            
+            db.ref(`clase/${codigo}/asistencias`).remove().then(() => {
+                msgInfo.style.color = "#16a34a";
+                msgInfo.innerText = `✅ Asistencias de ${codigo} borradas a 0.`;
+                setTimeout(() => msgInfo.style.display = 'none', 4000);
+            }).catch(e => {
+                msgInfo.style.color = "#dc2626";
+                msgInfo.innerText = `❌ Error: ${e.message}`;
+            });
+        }
+    };
+
+// =========================================================
+// LÓGICA DE ASISTENCIA VIRTUAL PERMANENTE (MODIFICADA)
+// =========================================================
+
+window.validarPinPermanente = function() {
+    if (!navigator.onLine) return alert("📡 Sin conexión. Necesitas internet para validar tu asistencia.");
+    
+    const pinIngresado = document.getElementById('input-pin-permanente').value.trim();
+    const btn = document.getElementById('btn-validar-permanente');
+    const msg = document.getElementById('msg-pin-permanente');
+    
+    if (pinIngresado.length !== 4) {
+        msg.style.color = "#dc2626"; msg.style.background = "#fef2f2";
+        msg.innerText = "❌ El PIN debe tener exactamente 4 dígitos.";
+        msg.style.display = "block"; return;
+    }
+
+    const ahora = typeof obtenerFechaSistema === 'function' ? obtenerFechaSistema() : new Date();
+    const hoy = ahora.getFullYear() + '-' + String(ahora.getMonth() + 1).padStart(2, '0') + '-' + String(ahora.getDate()).padStart(2, '0');
+    
+    btn.disabled = true; btn.innerText = "⏳...";
+    msg.style.display = "none";
+
+    db.ref('sistema/asistencia_virtual/' + hoy).once('value').then(snap => {
+        const pinReal = snap.val();
+        
+        if (snap.exists() && String(pinReal) === String(pinIngresado)) {
+            
+            // BUSCAMOS CUALQUIER CLASE HOY (SIN IMPORTAR SI ES ONLINE O PRESENCIAL)
+            let claseDeHoy = FECHAS_CURSO.find(c => c.fecha === hoy);
+            
+            // SI NO HAY NINGUNA CLASE HOY (EJ: ESTÁS HACIENDO PRUEBAS), USA LA FECHA COMO ID
+            const claseId = claseDeHoy ? claseDeHoy.id : hoy;
+
+            const codigo = localStorage.getItem("elegidos_student_code");
+            const horaActualStr = String(ahora.getHours()).padStart(2, '0') + ':' + String(ahora.getMinutes()).padStart(2, '0');
+            const registro = horaActualStr + " (Asistió Virtualmente)";
+            
+            db.ref(`clase/${codigo}/asistencias/${claseId}`).set(registro).then(() => {
+                msg.style.color = "#15803d"; msg.style.background = "#dcfce7";
+                msg.innerText = "✅ ¡Asistencia virtual registrada exitosamente!";
+                msg.style.display = "block";
+                
+                if(!datosEstudianteActual.asistencias) datosEstudianteActual.asistencias = {};
+                datosEstudianteActual.asistencias[claseId] = registro;
+                if (typeof renderizarListaClases === 'function') renderizarListaClases();
+                if (typeof renderizarCalificacionesYAsistencias === 'function') renderizarCalificacionesYAsistencias();
+                
+                btn.disabled = false; btn.innerText = "Validar";
+                document.getElementById('input-pin-permanente').value = '';
+                setTimeout(() => { msg.style.display = "none"; }, 5000);
+            }).catch(e => {
+                msg.style.color = "#dc2626"; msg.style.background = "#fef2f2";
+                msg.innerText = "❌ Error de red al guardar. Intenta de nuevo.";
+                msg.style.display = "block";
+                btn.disabled = false; btn.innerText = "Validar";
+            });
+            
+        } else {
+            msg.style.color = "#dc2626"; msg.style.background = "#fef2f2";
+            msg.innerText = "❌ PIN incorrecto o inactivo.";
+            msg.style.display = "block";
+            btn.disabled = false; btn.innerText = "Validar";
+        }
+    }).catch(e => {
+        msg.style.color = "#dc2626"; msg.style.background = "#fef2f2";
+        msg.innerText = "❌ Fallo de conexión con el servidor.";
+        msg.style.display = "block";
+        btn.disabled = false; btn.innerText = "Validar";
+    });
+};    // =========================================================
+    // LÓGICA DE LISTADO DE EXÁMENES REALIZADOS
+    // =========================================================
+    let antenaExamenesRealizados = false;
+    window.renderizarMisExamenes = function() {
+        const codigoActual = localStorage.getItem("elegidos_student_code");
+        if (!codigoActual || (typeof esInvitado !== 'undefined' && esInvitado)) return;
+
+        if (!antenaExamenesRealizados) {
+            antenaExamenesRealizados = true;
+            db.ref('sistema/historial_examenes').on('value', snap => {
+                const contenedor = document.getElementById("contenedor-examenes");
+                if (!contenedor) return;
+
+                let realizados = 0; // Exámenes que SÍ entregó
+                let totalExamenesBD = 0; // Exámenes asignados en el mes
+                let sumaNotasGlobal = 0;
+                let aprobados = 0;
+
+                const MESES = [
+                    { id: 9, nombre: "Septiembre" },
+                    { id: 10, nombre: "Octubre" },
+                    { id: 11, nombre: "Noviembre" },
+                    { id: 12, nombre: "Diciembre" }
+                ];
+
+                const asistenciasBD = (datosEstudianteActual && datosEstudianteActual.asistencias) ? datosEstudianteActual.asistencias : {};
+                const ahora = (typeof obtenerFechaSistema === "function") ? obtenerFechaSistema() : new Date();
+
+                let examenesPorMes = { 9: [], 10: [], 11: [], 12: [] };
+
+                if (snap.exists()) {
+                    const historial = snap.val();
+                    const ahora = (typeof obtenerFechaSistema === "function") ? obtenerFechaSistema() : new Date();
+
+                    Object.keys(historial).forEach(keyId => {
+                        const examen = historial[keyId];
+                        if (!examen || typeof examen !== 'object') return;
+                        
+                        // Parseo usando la clave principal que el admin guarda como Date.now()
+                        let ts = parseInt(keyId);
+                        if (isNaN(ts)) ts = examen.timestamp || Date.now();
+                        
+                        const fechaExamen = new Date(ts);
+                        const yaRealizado = examen.resultados && examen.resultados[codigoActual];
+                        
+                        // REGLA CLAVE: Ignorar exámenes futuros que no se han respondido aún
+                        if (ahora < fechaExamen && !yaRealizado) return;
+
+                        totalExamenesBD++;
+                        
+                        let mesExamen = fechaExamen.getMonth() + 1;
+                        if (mesExamen < 9) mesExamen = 9;
+                        if (mesExamen > 12) mesExamen = 12;
+                        
+                        let miResultado = null;
+                        let notaParaPromedio = 0;
+
+                        if (yaRealizado) {
+                            miResultado = examen.resultados[codigoActual];
+                            notaParaPromedio = parseFloat(miResultado.nota);
+                            realizados++;
+                            if (notaParaPromedio >= 6.0) aprobados++; 
+                        } else {
+                            miResultado = { nota: 0, correctas: 0, total: 10, missed: true };
+                            notaParaPromedio = 0;
+                        }
+
+                        sumaNotasGlobal += notaParaPromedio;
+
+                        examenesPorMes[mesExamen].push({
+                            ...examen,
+                            titulo: examen.titulo || "Evaluación Oficial", // Corrige el 'Undefined'
+                            miResultado: miResultado,
+                            fechaObj: fechaExamen
+                        });
+                    });
+                }
+
+                let htmlExamenes = "";
+                let totalClasesCuatrimestre = 0;
+                let asistenciasCuatrimestreValidas = 0;
+
+                Object.keys(examenesPorMes).forEach(m => {
+                    examenesPorMes[m].sort((a, b) => b.fechaObj - a.fechaObj);
+                });
+
+                MESES.forEach(mes => {
+                    const clasesMes = FECHAS_CURSO.filter(c => {
+                        if (!c.fecha) return false;
+                        return parseInt(c.fecha.split("-")[1], 10) === mes.id;
+                    });
+
+                    let asistenciasMes = 0;
+                    let faltasJustificadas = 0;
+                    let clasesPasadasMes = 0;
+
+                    clasesMes.forEach(clase => {
+                        const fechaClaseObj = new Date(clase.fecha + "T23:59:59");
+                        if (ahora > fechaClaseObj) {
+                            clasesPasadasMes++;
+                            totalClasesCuatrimestre++;
+                            let registro = asistenciasBD[clase.id] || asistenciasBD[clase.fecha];
+                            if (registro) {
+                                if (String(registro).toLowerCase().includes("permiso")) {
+                                    faltasJustificadas++;
+                                } else {
+                                    asistenciasMes++;
+                                }
+                            }
+                        }
+                    });
+
+                    let asistenciasValidasMes = asistenciasMes;
+                    if (clasesPasadasMes > 0) {
+                        const pctPermisos = (faltasJustificadas / clasesPasadasMes) * 100;
+                        if (pctPermisos <= 40) {
+                            asistenciasValidasMes += faltasJustificadas;
+                        }
+                    }
+                    asistenciasCuatrimestreValidas += asistenciasValidasMes;
+
+                    let notaAsistenciaMes = 10;
+                    if (clasesPasadasMes > 0) {
+                        notaAsistenciaMes = (asistenciasValidasMes / clasesPasadasMes) * 10;
+                    }
+
+                    const examenesDelMes = examenesPorMes[mes.id] || [];
+                    let notaExamenesMes = 0;
+                    if (examenesDelMes.length > 0) {
+                        const sumaMes = examenesDelMes.reduce((acc, curr) => acc + parseFloat(curr.miResultado.nota), 0);
+                        notaExamenesMes = sumaMes / examenesDelMes.length;
+                    }
+
+                    let notaMesCombinada = null;
+                    if (clasesPasadasMes > 0 || examenesDelMes.length > 0) {
+                        if (examenesDelMes.length > 0 && clasesPasadasMes > 0) {
+                            notaMesCombinada = (notaExamenesMes + notaAsistenciaMes) / 2;
+                        } else if (examenesDelMes.length > 0) {
+                            notaMesCombinada = notaExamenesMes;
+                        } else {
+                            notaMesCombinada = notaAsistenciaMes;
+                        }
+                    }
+
+                    if (clasesPasadasMes > 0 || examenesDelMes.length > 0) {
+                        let colorMensual = notaMesCombinada >= 8.0 ? "#10b981" : (notaMesCombinada >= 6.0 ? "#f59e0b" : "#ef4444");
+                        let textoMensual = notaMesCombinada >= 6.0 ? "Mes Aprobado" : "Mes Reprobado (< 6.0)";
+
+                        htmlExamenes += `
+                        <div style="margin-top: 30px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: flex-end;">
+                            <div>
+                                <h4 style="font-size: 1.15rem; font-weight: 900; color: var(--text-dark); margin: 0; text-transform: uppercase;">${mes.nombre}</h4>
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">Asistencia válida: ${asistenciasValidasMes}/${clasesPasadasMes}</span>
+                            </div>
+                            <div style="text-align: right;">
+                                <span style="font-size: 1.3rem; font-weight: 900; color: ${colorMensual};">${notaMesCombinada.toFixed(1)}</span>
+                                <br><span style="font-size: 0.65rem; font-weight: 800; color: ${colorMensual}; text-transform: uppercase;">${textoMensual}</span>
+                            </div>
+                        </div>`;
+
+                        if (examenesDelMes.length === 0) {
+                             htmlExamenes += `<p style="font-size: 0.8rem; color: #94a3b8; font-style: italic; text-align: center; padding: 10px; background: rgba(0,0,0,0.02); border-radius: 12px;">No hubo evaluaciones este mes. Nota basada 100% en asistencia.</p>`;
+                        } else {
+                            examenesDelMes.forEach(examen => {
+                                const miResultado = examen.miResultado;
+                                const fechaFormat = examen.fechaObj.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+                                
+                                let colorNota = miResultado.missed ? "#ef4444" : (miResultado.nota >= 9 ? "#d946ef" : (miResultado.nota >= 6 ? "#22c55e" : "#ef4444"));
+                                let bgNota = miResultado.missed ? "rgba(239, 68, 68, 0.1)" : (miResultado.nota >= 9 ? "rgba(217, 70, 239, 0.1)" : (miResultado.nota >= 6 ? "rgba(34, 197, 94, 0.1)" : "rgba(239, 68, 68, 0.1)"));
+                                let statusText = miResultado.missed ? "No Realizado (0.0)" : (miResultado.nota >= 9 ? "¡Excelente!" : (miResultado.nota >= 6 ? "Aprobado" : "Reprobado"));
+
+                                let correctasText = miResultado.missed ? "No te presentaste a este examen" : `${miResultado.correctas} de ${miResultado.total} correctas`;
+
+                                htmlExamenes += `
+                                <div class="class-item" style="background: #ffffff; border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 10px; border: 1px solid rgba(0,0,0,0.05);">
+                                    <div class="class-icon" style="background: ${colorNota}; color: white; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 10px ${bgNota};">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                                    </div>
+                                    <div class="class-info" style="flex: 1;">
+                                        <h5 style="font-size: 0.95rem; margin-bottom: 2px;">${examen.titulo}</h5>
+                                        <p style="margin-bottom: 0; font-size: 0.75rem;"><span style="color: #64748b;">${fechaFormat}</span> • <strong style="color: ${colorNota};">${statusText}</strong></p>
+                                        <p style="margin-bottom: 0; font-size: 0.7rem; color: #94a3b8;">${correctasText}</p>
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; align-items: flex-end; justify-content: center;">
+                                        <div style="background: ${bgNota}; color: ${colorNota}; padding: 8px 14px; border-radius: 12px; font-weight: 900; font-size: 1.2rem; border: 1px solid ${colorNota};">
+                                            ${parseFloat(miResultado.nota).toFixed(1)}
+                                        </div>
+                                    </div>
+                                </div>`;
+                            });
+                        }
+                    }
+                });
+
+                const promedioExamenesGlobal = totalExamenesBD > 0 ? (sumaNotasGlobal / totalExamenesBD) : 0.0;
+                const pctAsistenciaGlobal = totalClasesCuatrimestre > 0 ? (asistenciasCuatrimestreValidas / totalClasesCuatrimestre) : 1;
+                const notaAsistenciaGlobal = pctAsistenciaGlobal * 10;
+                
+                let notaGlobalCombinada = 0.0;
+                if (totalExamenesBD > 0 && totalClasesCuatrimestre > 0) {
+                    notaGlobalCombinada = (promedioExamenesGlobal + notaAsistenciaGlobal) / 2;
+                } else if (totalExamenesBD > 0) {
+                    notaGlobalCombinada = promedioExamenesGlobal;
+                } else if (totalClasesCuatrimestre > 0) {
+                    notaGlobalCombinada = notaAsistenciaGlobal;
+                }
+
+                if (htmlExamenes !== "") {
+                    contenedor.innerHTML = htmlExamenes;
+                    // Cambio: Ahora indica entregados / total de exámenes
+                    document.getElementById("stat-examenes-total").innerText = realizados.toString();
+                    document.getElementById("stat-examenes-promedio").innerText = promedioExamenesGlobal.toFixed(1);
+                    document.getElementById("stat-examenes-pct").innerText = totalExamenesBD > 0 ? Math.round((aprobados / totalExamenesBD) * 100) + "%" : "0%";
+                    
+                    const elNotaGlobal = document.getElementById("stat-nota-global-proyectada");
+                    if(elNotaGlobal) {
+                        elNotaGlobal.innerText = notaGlobalCombinada.toFixed(1);
+                        elNotaGlobal.style.color = notaGlobalCombinada >= 6.0 ? "#7c3aed" : "#ef4444";
+                    }
+               } else {
+                    contenedor.innerHTML = `<p style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 20px; background: rgba(0,0,0,0.02); border-radius: 16px; border: 1px dashed #cbd5e1;">Aún no hay evaluaciones asignadas ni clases pasadas.</p>`;
+                    document.getElementById("stat-examenes-total").innerText = "0"; // Formato exacto del diseño sin "0/0"
+                    document.getElementById("stat-examenes-promedio").innerText = "0.0";
+                    document.getElementById("stat-examenes-pct").innerText = "0%";
+                    
+                    const elNotaGlobal = document.getElementById("stat-nota-global-proyectada");
+                    if(elNotaGlobal) elNotaGlobal.innerText = "0.0";
+                }
+            });
+        }
+    };
+
 </script>
 
 <!-- POPUP ASISTENCIA VIRTUAL (PIN) -->
@@ -3334,122 +4171,719 @@ const codigoBoleto = `${prefijo}-2026-${numEstudiante}`;
             { id: 12, nombre: "Diciembre", desc: "Examen Final y Cierre", targetKey: "dic" }
         ];
 
-        const califsBD = (datosEstudianteActual && datosEstudianteActual.calificaciones) ? datosEstudianteActual.calificaciones : {};
         const asistenciasBD = (datosEstudianteActual && datosEstudianteActual.asistencias) ? datosEstudianteActual.asistencias : {};
+        const codigoEstudiante = localStorage.getItem("elegidos_student_code");
 
-        let sumaNotas = 0;
-        let mesesConNota = 0;
-        let totalClasesCuatrimestre = 0;
-        let asistenciasCuatrimestre = 0;
-        let faltasTotales = 0;
+       // Realizamos una consulta a Firebase para obtener las notas de los exámenes
+        db.ref('sistema/historial_examenes').once('value').then(snapHistorial => {
+            let notasExamenes = [];
+            
+         if (snapHistorial.exists()) {
+                const historial = snapHistorial.val();
+                const ahora = (typeof obtenerFechaSistema === "function") ? obtenerFechaSistema() : new Date();
 
-        let htmlFilas = "";
+                Object.keys(historial).forEach(keyId => {
+                    const examen = historial[keyId];
+                    if (!examen || typeof examen !== 'object') return;
+                    
+                    // Parseo usando la clave generada por el panel del administrador
+                    let ts = parseInt(keyId);
+                    if (isNaN(ts)) ts = examen.timestamp || Date.now();
+                    
+                    const fechaExamen = new Date(ts);
+                    const yaRealizado = examen.resultados && examen.resultados[codigoEstudiante];
+                    
+                    // REGLA CLAVE: Ignorar exámenes futuros que no se han respondido aún
+                    if (ahora < fechaExamen && !yaRealizado) return;
 
-        MESES.forEach(mes => {
-            const clasesMes = FECHAS_CURSO.filter(c => {
-                if (!c.fecha) return false;
-                const m = parseInt(c.fecha.split("-")[1], 10);
-                return m === mes.id;
+                    let mesExamen = fechaExamen.getMonth() + 1;
+                    if (mesExamen < 9) mesExamen = 9;
+                    if (mesExamen > 12) mesExamen = 12;
+
+                    let notaFinal = 0.0;
+                    if (yaRealizado) {
+                        notaFinal = parseFloat(examen.resultados[codigoEstudiante].nota);
+                    }
+                    
+                    notasExamenes.push({
+                        mes: mesExamen,
+                        nota: notaFinal
+                    });
+                });
+            }
+
+            let sumaNotasGlobal = 0;
+            let totalExamenesGlobal = 0;
+            let totalClasesCuatrimestre = 0;
+            let asistenciasCuatrimestre = 0;
+            let faltasTotales = 0;
+
+            let htmlFilas = "";
+
+            MESES.forEach(mes => {
+                const clasesMes = FECHAS_CURSO.filter(c => {
+                    if (!c.fecha) return false;
+                    const m = parseInt(c.fecha.split("-")[1], 10);
+                    return m === mes.id;
+                });
+
+                let asistenciasMes = 0;
+                let faltasJustificadas = 0;
+                let faltasInjustificadas = 0;
+
+                const ahora = (typeof obtenerFechaSistema === "function") ? obtenerFechaSistema() : new Date();
+
+                // 1. Contar clases, asistencias y permisos del mes (solo clases pasadas)
+                let clasesPasadasMes = 0;
+                clasesMes.forEach(clase => {
+                    const fechaClaseObj = new Date(clase.fecha + "T23:59:59");
+                    if (ahora > fechaClaseObj) {
+                        clasesPasadasMes++;
+                        totalClasesCuatrimestre++;
+                        
+                        let registro = asistenciasBD[clase.id] || asistenciasBD[clase.fecha];
+                        if (registro) {
+                            if (String(registro).toLowerCase().includes("permiso")) {
+                                faltasJustificadas++;
+                            } else {
+                                asistenciasMes++;
+                            }
+                        } else {
+                            faltasInjustificadas++;
+                            faltasTotales++;
+                        }
+                    }
+                });
+
+                // 2. Lógica de Penalización por Permisos (> 40% anula todos los permisos)
+                let asistenciasValidasMes = asistenciasMes;
+                if (clasesPasadasMes > 0) {
+                    const porcentajePermisos = (faltasJustificadas / clasesPasadasMes) * 100;
+                    if (porcentajePermisos <= 40) {
+                        // Si los permisos son válidos (<= 40%), cuentan como asistencia para la nota
+                        asistenciasValidasMes += faltasJustificadas;
+                    } else {
+                        // Si superan el 40%, se anulan (ya no se suman a asistenciasValidasMes)
+                        // Para el global, sumamos como faltas injustificadas para penalizar
+                        faltasTotales += faltasJustificadas; 
+                    }
+                }
+                
+                asistenciasCuatrimestre += asistenciasValidasMes;
+
+                const totalEnMesVisual = clasesMes.length || 1;
+                // El porcentaje visual sigue mostrando la realidad de asistencias puras + permisos,
+                // pero la nota se calcula con asistenciasValidasMes
+                const pctAsistenciaVisual = Math.round(((asistenciasMes + faltasJustificadas) / totalEnMesVisual) * 100);
+                
+                // Calculamos la nota de asistencia del mes en base 10 (solo con clases pasadas)
+                let notaAsistenciaMes = 10;
+                if (clasesPasadasMes > 0) {
+                     notaAsistenciaMes = (asistenciasValidasMes / clasesPasadasMes) * 10;
+                }
+
+                // 3. Calculamos el promedio de exámenes del mes
+                const examenesDelMes = notasExamenes.filter(n => n.mes === mes.id);
+                let notaExamenesMes = 0;
+                
+                if (examenesDelMes.length > 0) {
+                    const sumaMes = examenesDelMes.reduce((acc, curr) => acc + curr.nota, 0);
+                    notaExamenesMes = sumaMes / examenesDelMes.length;
+                    
+                    sumaNotasGlobal += sumaMes;
+                    totalExamenesGlobal += examenesDelMes.length;
+                }
+
+                // 4. Nota Mensual Combinada (Promedio de Exámenes y Asistencia del Mes)
+                let notaMesCombinada = null;
+                if (clasesPasadasMes > 0 || examenesDelMes.length > 0) {
+                    if (examenesDelMes.length > 0 && clasesPasadasMes > 0) {
+                        notaMesCombinada = (notaExamenesMes + notaAsistenciaMes) / 2;
+                    } else if (examenesDelMes.length > 0) {
+                        notaMesCombinada = notaExamenesMes;
+                    } else {
+                        notaMesCombinada = notaAsistenciaMes;
+                    }
+                }
+
+                let notaBadgeHTML = `<span style="color: #64748b; font-size: 0.8rem; font-style: italic;">Por calificar</span>`;
+                if (notaMesCombinada !== null) {
+                    let clasePill = notaMesCombinada >= 9.0 ? "nota-excelente" : (notaMesCombinada >= 8.0 ? "nota-buena" : (notaMesCombinada >= 6.0 ? "nota-regular" : "nota-baja"));
+                    notaBadgeHTML = `<span class="calif-nota-pill ${clasePill}" title="${examenesDelMes.length} Exám. | Asis: ${notaAsistenciaMes.toFixed(1)}">${notaMesCombinada.toFixed(1)}</span>`;
+                }
+
+                htmlFilas += `
+                    <tr>
+                        <td>
+                            <strong style="color: #fff; font-size: 0.95rem; display: block;">${mes.nombre}</strong>
+                            <span style="font-size: 0.7rem; color: #94a3b8;">${mes.desc}</span>
+                        </td>
+                        <td style="font-size: 0.8rem; color: #cbd5e1;">
+                            Evaluaciones & Tareas
+                        </td>
+                        <td style="text-align: center; cursor: pointer;" onclick="abrirDetalleFaltasMes('${mes.nombre}', ${asistenciasMes}, ${totalEnMesVisual}, ${faltasJustificadas}, ${faltasInjustificadas})">
+                            <span style="font-weight: 800; color: ${pctAsistenciaVisual >= 80 ? '#4ade80' : '#f87171'};">${pctAsistenciaVisual}%</span><br>
+                            <small style="font-size: 0.65rem; color: #94a3b8; text-decoration: underline;">${asistenciasMes}/${totalEnMesVisual} ses. (ver)</small>
+                        </td>
+                        <td style="text-align: center;">
+                            ${notaBadgeHTML}
+                        </td>
+                    </tr>
+                `;
             });
 
-            let asistenciasMes = 0;
-            let faltasJustificadas = 0;
-            let faltasInjustificadas = 0;
+            tbody.innerHTML = htmlFilas;
 
-            clasesMes.forEach(clase => {
-    totalClasesCuatrimestre++;
-    let registro = asistenciasBD[clase.id] || asistenciasBD[clase.fecha];
-    
-    // Sincronización oficial: Si tienen el boleto vinculado, evita que les cuente como falta.
-    if (datosEstudianteActual && datosEstudianteActual.accesos_especiales) {
-        if (clase.fecha === "2026-10-04" && (datosEstudianteActual.accesos_especiales["elegidos"] || datosEstudianteActual.accesos_especiales["mahu"])) registro = "Boleto Presentado";
-        if ((clase.fecha === "2026-10-25" || clase.fecha === "2026-10-27") && (datosEstudianteActual.accesos_especiales["masterclass"] || datosEstudianteActual.accesos_especiales["dreamez"])) registro = "Boleto Presentado";
-        if (clase.fecha === "2026-11-08" && datosEstudianteActual.accesos_especiales["festival"]) registro = "Boleto Presentado";
+            // --- CÁLCULO DE LA NOTA GLOBAL PROYECTADA ---
+            const promedioExamenesGlobal = totalExamenesGlobal > 0 ? (sumaNotasGlobal / totalExamenesGlobal) : 0.0; 
+            const pctAsistenciaGlobalPuro = totalClasesCuatrimestre > 0 ? Math.round((asistenciasCuatrimestre / totalClasesCuatrimestre) * 100) : 100;
+            
+            // Calculamos la nota global combinada (Asistencia penalizada convertida a base 10)
+            const notaAsistenciaGlobal = (pctAsistenciaGlobalPuro / 100) * 10;
+            let notaGlobalCombinada = 0.0;
+
+            if (totalExamenesGlobal > 0 && totalClasesCuatrimestre > 0) {
+                notaGlobalCombinada = (promedioExamenesGlobal + notaAsistenciaGlobal) / 2;
+            } else if (totalExamenesGlobal > 0) {
+                notaGlobalCombinada = promedioExamenesGlobal;
+            } else if (totalClasesCuatrimestre > 0) {
+                notaGlobalCombinada = notaAsistenciaGlobal;
+            }
+            
+            document.getElementById("calif-promedio-global").innerText = (totalExamenesGlobal > 0 || totalClasesCuatrimestre > 0) ? notaGlobalCombinada.toFixed(1) : "N/A";
+            document.getElementById("calif-asistencia-pct").innerText = pctAsistenciaGlobalPuro + "%";
+            document.getElementById("calif-asistencia-conteo").innerText = `${asistenciasCuatrimestre} de ${totalClasesCuatrimestre} clases`;
+            document.getElementById("calif-faltas-total").innerText = faltasTotales;
+
+            // --- ACTUALIZACIÓN DE BADGES DE ESTADO (MÍNIMO 6.0) ---
+            const containerBadge = document.getElementById("calif-status-badge-container");
+            if (containerBadge) {
+                if (totalExamenesGlobal === 0 && totalClasesCuatrimestre === 0) {
+                    containerBadge.innerHTML = `<span class="calif-status-badge" style="background: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3);">⚪ Sin Datos</span>`;
+                } else if (notaGlobalCombinada >= 8.0) {
+                    containerBadge.innerHTML = `<span class="calif-status-badge calif-status-seguro">🟢 Cierre Seguro</span>`;
+                } else if (notaGlobalCombinada >= 6.0) {
+                    containerBadge.innerHTML = `<span class="calif-status-badge calif-status-ajuste">🟡 Ajuste en Diciembre</span>`;
+                } else {
+                    containerBadge.innerHTML = `<span class="calif-status-badge calif-status-riesgo" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4);">🔴 Riesgo (Nota < 6.0)</span>`;
+                }
+            }
+            
+            // Añadimos el recordatorio del trabajo final al final del modal si no existe
+            const modalBody = document.querySelector("#modal-mis-calificaciones .calif-table-wrapper");
+            if(modalBody && !document.getElementById("nota-trabajo-final-reminder")) {
+                const reminderDiv = document.createElement("div");
+                reminderDiv.id = "nota-trabajo-final-reminder";
+                reminderDiv.style.cssText = "margin-top: 15px; padding: 15px; border-radius: 16px; background: rgba(139, 92, 246, 0.1); border: 1px dashed rgba(139, 92, 246, 0.4); text-align: center;";
+                reminderDiv.innerHTML = `<p style="color: #c4b5fd; font-size: 0.8rem; margin: 0; font-weight: 500;">📌 <strong>Nota Mínima Requerida: 6.0</strong><br>La Nota Mensual y Global es un promedio entre evaluaciones y asistencia válida (Máx. 40% permisos). El <strong>Trabajo Final</strong> será crucial para tu graduación.</p>`;
+                modalBody.parentNode.insertBefore(reminderDiv, modalBody.nextSibling);
+            }
+        });
+    }
+   function abrirDetalleFaltasMes(nombreMes, asistidas, total, justificadas, injustificadas) {
+        document.getElementById("modal-faltas-titulo").innerText = `Asistencia de ${nombreMes}`;
+        
+        let notaExplicacion = "";
+        let pctPermisos = total > 0 ? (justificadas / total) * 100 : 0;
+        
+        if (pctPermisos > 40) {
+             notaExplicacion = `<p style="color: #ef4444; font-weight: bold; margin-top: 8px;">⚠️ Límite de permisos excedido (>40%). Los permisos de este mes han sido anulados para el cálculo de tu nota.</p>`;
+        } else if (justificadas > 0) {
+             notaExplicacion = `<p style="color: #4ade80; font-weight: bold; margin-top: 8px;">✅ Permisos dentro del límite (≤40%). Cuentan como asistencia para tu nota.</p>`;
+        }
+
+        document.getElementById("modal-faltas-body").innerHTML = `
+            <div style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 10px;">
+                <p>🟢 <strong>Clases Asistidas (Físicas/Meet):</strong> ${asistidas} de ${total}</p>
+                <p style="margin-top: 6px;">🟠 <strong>Permisos Aprobados:</strong> ${justificadas}</p>
+                <p style="margin-top: 6px;">🔴 <strong>Inasistencias (Faltas):</strong> ${injustificadas}</p>
+                ${notaExplicacion}
+            </div>
+            <p style="font-size: 0.75rem; color: #94a3b8; text-align: center;">Para aprobar el mes requieres nota mínima de 6.0 (promedio entre asistencia y evaluaciones).</p>
+        `;
+        document.getElementById("modal-detalle-faltas").classList.add("activo");
+    }
+// =========================================================
+    // ANTENA PARA EXAMEN EN VIVO (NATIVO ELEGIDOS)
+    // =========================================================
+    let antenaExamenActiva = false;
+    let examenDataActual = null;
+    let temporizadorExamenInterval = null;
+
+    function iniciarEscuchaExamenLive() {
+        if (antenaExamenActiva) return;
+        antenaExamenActiva = true;
+
+        db.ref('sistema/examen_live').on('value', snap => {
+            const data = snap.val();
+            const overlayExamen = document.getElementById("examen-live-overlay");
+            const codigoActual = localStorage.getItem("elegidos_student_code");
+
+            if (!overlayExamen || !codigoActual) return;
+
+            if (data && data.activo === true && data.preguntas) {
+                
+                // --- VALIDACIÓN DE TARGET (A QUIÉN VA DIRIGIDO) ---
+                const ahora = typeof obtenerFechaSistema === 'function' ? obtenerFechaSistema() : new Date();
+                const hoyStr = ahora.getFullYear() + '-' + String(ahora.getMonth() + 1).padStart(2, '0') + '-' + String(ahora.getDate()).padStart(2, '0');
+                const entroAlMeet = localStorage.getItem('ingreso_meet_' + hoyStr) === 'true';
+
+                if (data.target === 'especifico' && data.targetCodigo !== codigoActual) return;
+                if (data.target === 'meet' && !entroAlMeet) return;
+                // --------------------------------------------------
+                
+                // Verificar si YA envié mis respuestas a este examen
+                db.ref(`sistema/examen_resultados_live/${codigoActual}`).once('value').then(resSnap => {
+                    if (resSnap.exists() && resSnap.val().examen_id === data.id_historial) {
+                        // Ya hice el examen, no me lo muestres de nuevo
+                        overlayExamen.style.display = 'none';
+                        return;
+                    }
+
+                    // Preparar y Mostrar el Examen
+                    examenDataActual = data;
+                    document.getElementById("examen-live-titulo").innerText = data.titulo.toUpperCase();
+                    construirPreguntasExamen(data.preguntas);
+                    
+                    // Iniciar Temporizador Visual
+                    iniciarTemporizadorExamen(data.duracion || 15);
+                    
+                    overlayExamen.style.display = 'flex';
+                });
+            } else {
+                // El Admin apagó el examen
+                overlayExamen.style.display = 'none';
+                if (temporizadorExamenInterval) clearInterval(temporizadorExamenInterval);
+            }
+        });
     }
 
-    if (registro) {
-                    if (String(registro).toLowerCase().includes("permiso")) {
-                        faltasJustificadas++;
-                    } else {
-                        asistenciasMes++;
-                        asistenciasCuatrimestre++;
-                    }
-                } else {
-                    const fechaClase = new Date(clase.fecha + "T23:59:59");
-                    const ahora = (typeof obtenerFechaSistema === "function") ? obtenerFechaSistema() : new Date();
-                    if (ahora > fechaClase) {
-                        faltasInjustificadas++;
-                        faltasTotales++;
+    function construirPreguntasExamen(preguntas) {
+        const contenedor = document.getElementById("examen-preguntas-container");
+        contenedor.innerHTML = "";
+
+        preguntas.forEach((p, idx) => {
+            let htmlOpciones = "";
+            p.opciones.forEach((op, opIdx) => {
+                htmlOpciones += `
+                <label style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; margin-bottom: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+                    <input type="radio" name="pregunta_${idx}" value="${opIdx}" style="width: 18px; height: 18px; accent-color: #ef4444;">
+                    <span style="font-size: 0.95rem; color: #f8fafc;">${op}</span>
+                </label>`;
+            });
+
+            contenedor.innerHTML += `
+            <div class="pregunta-card" style="background: rgba(15, 23, 42, 0.6); padding: 20px; border-radius: 16px; margin-bottom: 20px; border: 1px solid rgba(239, 68, 68, 0.2); text-align: left;">
+                <h3 style="color: #fca5a5; font-size: 1.1rem; margin-bottom: 15px; font-weight: 800;">${idx + 1}. ${p.pregunta}</h3>
+                <div class="opciones-container">
+                    ${htmlOpciones}
+                </div>
+            </div>`;
+        });
+    }
+
+    function iniciarTemporizadorExamen(minutosTotales) {
+        if (temporizadorExamenInterval) clearInterval(temporizadorExamenInterval);
+        
+        let tiempoRestanteSecs = minutosTotales * 60;
+        const display = document.getElementById("examen-temporizador");
+
+        temporizadorExamenInterval = setInterval(() => {
+            tiempoRestanteSecs--;
+            
+            let min = Math.floor(tiempoRestanteSecs / 60);
+            let sec = tiempoRestanteSecs % 60;
+            display.innerText = `⏳ TIEMPO RESTANTE: ${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+            
+            if (tiempoRestanteSecs <= 60) {
+                display.style.color = "#f87171"; // Rojo cuando queda poco tiempo
+                display.style.animation = "pulseRuleta 1s infinite";
+            }
+
+            if (tiempoRestanteSecs <= 0) {
+                clearInterval(temporizadorExamenInterval);
+                enviarRespuestasExamen(true); // Forzar envío por tiempo agotado
+            }
+        }, 1000);
+    }
+
+    function enviarRespuestasExamen(porTiempo = false) {
+        if (!examenDataActual) return;
+        const codigoActual = localStorage.getItem("elegidos_student_code");
+        const nombreActual = document.getElementById("display-name").innerText || "Estudiante";
+
+        if (!porTiempo && !confirm("¿Estás seguro de enviar tus respuestas? No podrás modificarlas después.")) return;
+
+        const btn = document.getElementById("btn-enviar-examen");
+        if (btn) { btn.disabled = true; btn.innerText = "Enviando..."; }
+
+        let correctas = 0;
+        const totalPreguntas = examenDataActual.preguntas.length;
+
+        // Evaluar respuestas
+        examenDataActual.preguntas.forEach((p, idx) => {
+            const seleccionada = document.querySelector(`input[name="pregunta_${idx}"]:checked`);
+            if (seleccionada && parseInt(seleccionada.value) === p.correcta) {
+                correctas++;
+            }
+        });
+
+        // Calcular Nota base 10
+        const notaFinal = (correctas / totalPreguntas) * 10;
+
+        const dataResultado = {
+            examen_id: examenDataActual.id_historial,
+            nombre: nombreActual,
+            nota: notaFinal,
+            correctas: correctas,
+            total: totalPreguntas,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        };
+
+        // Enviar a la base de datos "Live" para el panel del admin y al Historial General
+        const updates = {};
+        updates[`sistema/examen_resultados_live/${codigoActual}`] = dataResultado;
+        updates[`sistema/historial_examenes/${examenDataActual.id_historial}/resultados/${codigoActual}`] = dataResultado;
+
+        db.ref().update(updates).then(() => {
+            if (temporizadorExamenInterval) clearInterval(temporizadorExamenInterval);
+            document.getElementById("examen-live-overlay").style.display = 'none';
+            alert(`✅ Examen enviado con éxito.\nTu calificación fue: ${notaFinal.toFixed(1)}/10`);
+        }).catch(err => {
+            alert("Error de conexión al enviar el examen. " + err);
+            if (btn) { btn.disabled = false; btn.innerText = "Enviar Respuestas"; }
+        });
+    }
+// =========================================================
+    // LÓGICA DEL PROGRAMA DE LEALTAD Y RECOMPENSAS
+    // =========================================================
+    window.calcularPuntosLealtad = function() {
+        const codigoActual = localStorage.getItem("elegidos_student_code");
+        if (!codigoActual || !datosEstudianteActual) return 0;
+
+        const ahora = (typeof obtenerFechaSistema === "function") ? obtenerFechaSistema() : new Date();
+        const mesActual = ahora.getMonth() + 1; // 1-12
+        let totalPuntos = 0;
+
+        // 1. PUNTOS POR ASISTENCIA Y PUNTUALIDAD (Sesiones del mes actual)
+        if (datosEstudianteActual.asistencias) {
+            Object.keys(datosEstudianteActual.asistencias).forEach(claseKey => {
+                const reg = String(datosEstudianteActual.asistencias[claseKey]);
+                // Verificar que pertenezca al mes actual
+                let esDelMes = claseKey.includes(`-${String(mesActual).padStart(2, '0')}-`);
+                if (!esDelMes) {
+                    const claseObj = FECHAS_CURSO.find(c => c.id === claseKey);
+                    if (claseObj && parseInt(claseObj.fecha.split('-')[1], 10) === mesActual) esDelMes = true;
+                }
+
+                if (esDelMes && !reg.toLowerCase().startsWith("permiso")) {
+                    totalPuntos += 100; // Asistencia regular
+                    if (reg.toLowerCase().includes("virtualmente") || reg.includes("Puntual")) {
+                        totalPuntos += 50; // Bono de puntualidad
                     }
                 }
             });
+        }
 
-            const totalEnMes = clasesMes.length || 1;
-            const pctAsistenciaMes = Math.round((asistenciasMes / totalEnMes) * 100);
-            const notaMes = califsBD[mes.targetKey] !== undefined ? parseFloat(califsBD[mes.targetKey]) : null;
-
-            let notaBadgeHTML = `<span style="color: #64748b; font-size: 0.8rem; font-style: italic;">Por calificar</span>`;
-            if (notaMes !== null) {
-                sumaNotas += notaMes;
-                mesesConNota++;
-                let clasePill = notaMes >= 9.0 ? "nota-excelente" : (notaMes >= 8.0 ? "nota-buena" : (notaMes >= 7.0 ? "nota-regular" : "nota-baja"));
-                notaBadgeHTML = `<span class="calif-nota-pill ${clasePill}">${notaMes.toFixed(1)}</span>`;
+        // 2. PUNTOS POR EXÁMENES APROBADOS (Del mes actual)
+        db.ref('sistema/historial_examenes').once('value').then(snap => {
+            if (snap.exists()) {
+                Object.values(snap.val()).forEach(ex => {
+                    let ts = ex.timestamp || parseInt(ex.id_historial);
+                    if (ts) {
+                        const fechaEx = new Date(parseInt(ts));
+                        if (fechaEx.getMonth() + 1 === mesActual && ex.resultados && ex.resultados[codigoActual]) {
+                            const nota = parseFloat(ex.resultados[codigoActual].nota);
+                            if (nota >= 6.0) totalPuntos += Math.round(nota * 20); // Hasta 200 pts por nota 10
+                        }
+                    }
+                });
             }
-
-            htmlFilas += `
-                <tr>
-                    <td>
-                        <strong style="color: #fff; font-size: 0.95rem; display: block;">${mes.nombre}</strong>
-                        <span style="font-size: 0.7rem; color: #94a3b8;">${mes.desc}</span>
-                    </td>
-                    <td style="font-size: 0.8rem; color: #cbd5e1;">
-                        Evaluación continua, Tareas & Prácticas
-                    </td>
-                    <td style="text-align: center; cursor: pointer;" onclick="abrirDetalleFaltasMes('${mes.nombre}', ${asistenciasMes}, ${totalEnMes}, ${faltasJustificadas}, ${faltasInjustificadas})">
-                        <span style="font-weight: 800; color: ${pctAsistenciaMes >= 80 ? '#4ade80' : '#f87171'};">${pctAsistenciaMes}%</span><br>
-                        <small style="font-size: 0.65rem; color: #94a3b8; text-decoration: underline;">${asistenciasMes}/${totalEnMes} ses. (ver)</small>
-                    </td>
-                    <td style="text-align: center;">
-                        ${notaBadgeHTML}
-                    </td>
-                </tr>
-            `;
+            actualizarPuntosEnPantalla(totalPuntos);
         });
 
-        tbody.innerHTML = htmlFilas;
+        // 3. PUNTOS POR RETOS SOCIALES DOMINICALES
+        if (datosEstudianteActual.puntos_sociales) {
+            totalPuntos += (datosEstudianteActual.puntos_sociales * 150);
+        }
 
-        const promedioProyectado = mesesConNota > 0 ? (sumaNotas / mesesConNota) : 8.5; 
-        const pctAsistenciaGlobal = totalClasesCuatrimestre > 0 ? Math.round((asistenciasCuatrimestre / totalClasesCuatrimestre) * 100) : 100;
+        actualizarPuntosEnPantalla(totalPuntos);
+        return totalPuntos;
+    };
 
-        document.getElementById("calif-promedio-global").innerText = promedioProyectado.toFixed(1);
-        document.getElementById("calif-asistencia-pct").innerText = pctAsistenciaGlobal + "%";
-        document.getElementById("calif-asistencia-conteo").innerText = `${asistenciasCuatrimestre} de ${totalClasesCuatrimestre} clases`;
-        document.getElementById("calif-faltas-total").innerText = faltasTotales;
+    function actualizarPuntosEnPantalla(pts) {
+        const elPuntos = document.getElementById("display-puntos-lealtad");
+        if (elPuntos) elPuntos.innerText = pts + " pts";
 
-        const containerBadge = document.getElementById("calif-status-badge-container");
-        if (containerBadge) {
-            if (promedioProyectado >= 8.0 && pctAsistenciaGlobal >= 80) {
-                containerBadge.innerHTML = `<span class="calif-status-badge calif-status-seguro">🟢 Cierre Seguro</span>`;
-            } else if (promedioProyectado >= 7.0 && pctAsistenciaGlobal >= 70) {
-                containerBadge.innerHTML = `<span class="calif-status-badge calif-status-ajuste">🟡 Ajuste en Diciembre</span>`;
-            } else {
-                containerBadge.innerHTML = `<span class="calif-status-badge calif-status-riesgo">🔴 Riesgo de Recuperatorio</span>`;
+        // Escuchar stock de premios en tiempo real desde Firebase
+        db.ref('sistema/recompensas_stock').on('value', snap => {
+            const stock = snap.exists() ? snap.val() : { gorra: 3, camisa: 2 };
+            
+            const elGorra = document.getElementById("stock-gorra");
+            if (elGorra) elGorra.innerText = (stock.gorra !== undefined ? stock.gorra : 3) + " disp.";
+
+            const elCamisa = document.getElementById("stock-camisa");
+            if (elCamisa) elCamisa.innerText = (stock.camisa !== undefined ? stock.camisa : 2) + " disp.";
+        });
+
+        // Bloqueo Anti-Monopolio del Nivel 3 (Camisa)
+        const codigoActual = localStorage.getItem("elegidos_student_code");
+        if (datosEstudianteActual && datosEstudianteActual.recompensas_canjeadas) {
+            if (datosEstudianteActual.recompensas_canjeadas.camisa) {
+                const btnCamisa = document.getElementById("btn-canje-camisa");
+                if (btnCamisa) {
+                    btnCamisa.disabled = true;
+                    btnCamisa.innerText = "Bloqueado";
+                    btnCamisa.style.background = "#64748b";
+                }
             }
         }
     }
 
-    function abrirDetalleFaltasMes(nombreMes, asistidas, total, justificadas, injustificadas) {
-        document.getElementById("modal-faltas-titulo").innerText = `Asistencia de ${nombreMes}`;
-        document.getElementById("modal-faltas-body").innerHTML = `
-            <div style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 10px;">
-                <p>🟢 <strong>Clases Asistidas:</strong> ${asistidas} de ${total}</p>
-                <p style="margin-top: 6px;">🟠 <strong>Faltas Justificadas (Permisos):</strong> ${justificadas}</p>
-                <p style="margin-top: 6px;">🔴 <strong>Inasistencias Injustificadas:</strong> ${injustificadas}</p>
-            </div>
-            <p style="font-size: 0.75rem; color: #94a3b8; text-align: center;">Recuerda mantener mínimo un 80% de asistencia para tu diploma oficial.</p>
-        `;
-        document.getElementById("modal-detalle-faltas").classList.add("activo");
+    window.canjearRecompensa = function(tipoPremio, costo) {
+        const codigoActual = localStorage.getItem("elegidos_student_code");
+        const ahora = (typeof obtenerFechaSistema === "function") ? obtenerFechaSistema() : new Date();
+        const mesActualKey = `${ahora.getFullYear()}-${ahora.getMonth() + 1}`;
+
+        const puntosActuales = parseInt(document.getElementById("display-puntos-lealtad").innerText) || 0;
+
+        if (puntosActuales < costo) {
+            return alert(`❌ Puntos insuficientes. Necesitas ${costo} puntos y actualmente tienes ${puntosActuales} pts.`);
+        }
+
+        // REGLA DE ORO 2: Límite de 1 Canje por Persona al Mes
+        if (datosEstudianteActual.ultimo_canje_mes === mesActualKey) {
+            return alert("⚠️ Regla del Programa: Solo puedes realizar 1 canje por mes. Espera al próximo mes para tu siguiente premio.");
+        }
+
+        // REGLA DE ORO 3: Anti-Monopolio de Camisa
+        if (tipoPremio === 'camisa' && datosEstudianteActual.recompensas_canjeadas && datosEstudianteActual.recompensas_canjeadas.camisa) {
+            return alert("🚫 Límite alcanzado: La camisa exclusiva solo puede ganarse 1 vez por estudiante durante todo el cuatrimestre.");
+        }
+
+        // Verificar Stock
+        db.ref(`sistema/recompensas_stock/${tipoPremio}`).once('value').then(snapStock => {
+            let stockDisponible = snapStock.exists() ? snapStock.val() : (tipoPremio === 'gorra' ? 3 : (tipoPremio === 'camisa' ? 2 : 999));
+
+            if (stockDisponible <= 0) {
+                return alert("❌ Lo sentimos, el stock de este premio está agotado.");
+            }
+
+            if (confirm(`🏆 ¿Confirmas canjear ${tipoPremio.toUpperCase()} por ${costo} puntos?\n\nObtendrás un ticket digital que deberás presentar al instructor en la siguiente clase presencial.`)) {
+                
+                const ticketId = `PREMIO-${tipoPremio.toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+                const updates = {};
+
+                // Descontar Stock
+                if (tipoPremio !== 'stickers') {
+                    updates[`sistema/recompensas_stock/${tipoPremio}`] = stockDisponible - 1;
+                }
+
+                // Registrar ticket digital en la cuenta del alumno
+                updates[`clase/${codigoActual}/boletos/${ticketId}`] = {
+                    codigo: ticketId,
+                    evento: `Premio: ${tipoPremio.toUpperCase()}`,
+                    tipo: "virtual",
+                    estado: "activo",
+                    fecha_canje: new Date().toISOString()
+                };
+
+                // Bloqueos de seguridad
+                updates[`clase/${codigoActual}/ultimo_canje_mes`] = mesActualKey;
+                updates[`clase/${codigoActual}/recompensas_canjeadas/${tipoPremio}`] = true;
+
+                db.ref().update(updates).then(() => {
+                    alert(`🎉 ¡FELICIDADES! Canje exitoso.\n\nSe ha generado el ticket digital "${ticketId}" en tu apartado de boletos. Preséntalo a tu instructor para reclamarlo en físico.`);
+                    if (typeof renderizarBoletosVinculados === 'function') renderizarBoletosVinculados();
+                    calcularPuntosLealtad();
+                });
+            }
+        });
+    };
+
+    // Auto-calcular puntos al cambiar a la pestaña boletos
+    const origCambiarSeccion = window.cambiarSeccion;
+    window.cambiarSeccion = function(tab, index) {
+        if (origCambiarSeccion) origCambiarSeccion(tab, index);
+        if (tab === 'boletos') {
+            setTimeout(calcularPuntosLealtad, 500);
+        }
+    };
+
+// =========================================================
+    // LÓGICA DEL PROGRAMA DE LEALTAD Y RECOMPENSAS
+    // =========================================================
+    window.calcularPuntosLealtad = function() {
+        const codigoActual = localStorage.getItem("elegidos_student_code");
+        if (!codigoActual || !datosEstudianteActual) return 0;
+
+        const ahora = (typeof obtenerFechaSistema === "function") ? obtenerFechaSistema() : new Date();
+        const mesActual = ahora.getMonth() + 1; // 1-12
+        let totalPuntos = 0;
+
+        // 1. PUNTOS POR ASISTENCIA Y PUNTUALIDAD (Sesiones del mes actual)
+        if (datosEstudianteActual.asistencias) {
+            Object.keys(datosEstudianteActual.asistencias).forEach(claseKey => {
+                const reg = String(datosEstudianteActual.asistencias[claseKey]);
+                // Verificar que pertenezca al mes actual
+                let esDelMes = claseKey.includes(`-${String(mesActual).padStart(2, '0')}-`);
+                if (!esDelMes) {
+                    const claseObj = FECHAS_CURSO.find(c => c.id === claseKey);
+                    if (claseObj && parseInt(claseObj.fecha.split('-')[1], 10) === mesActual) esDelMes = true;
+                }
+
+                if (esDelMes && !reg.toLowerCase().startsWith("permiso")) {
+                    totalPuntos += 100; // Asistencia regular
+                    if (reg.toLowerCase().includes("virtualmente") || reg.includes("Puntual")) {
+                        totalPuntos += 50; // Bono de puntualidad
+                    }
+                }
+            });
+        }
+
+        // 2. PUNTOS POR EXÁMENES APROBADOS (Del mes actual)
+        db.ref('sistema/historial_examenes').once('value').then(snap => {
+            if (snap.exists()) {
+                Object.values(snap.val()).forEach(ex => {
+                    let ts = ex.timestamp || parseInt(ex.id_historial);
+                    if (ts) {
+                        const fechaEx = new Date(parseInt(ts));
+                        if (fechaEx.getMonth() + 1 === mesActual && ex.resultados && ex.resultados[codigoActual]) {
+                            const nota = parseFloat(ex.resultados[codigoActual].nota);
+                            if (nota >= 6.0) totalPuntos += Math.round(nota * 20); // Hasta 200 pts por nota 10
+                        }
+                    }
+                });
+            }
+            actualizarPuntosEnPantalla(totalPuntos);
+        });
+
+        // 3. PUNTOS POR RETOS SOCIALES DOMINICALES
+        if (datosEstudianteActual.puntos_sociales) {
+            totalPuntos += (datosEstudianteActual.puntos_sociales * 150);
+        }
+
+        actualizarPuntosEnPantalla(totalPuntos);
+        return totalPuntos;
+    };
+
+    function actualizarPuntosEnPantalla(pts) {
+        const elPuntos = document.getElementById("display-puntos-lealtad");
+        if (elPuntos) elPuntos.innerText = pts + " pts";
+
+        // Escuchar stock de premios en tiempo real desde Firebase
+        db.ref('sistema/recompensas_stock').on('value', snap => {
+            const stock = snap.exists() ? snap.val() : { gorra: 3, camisa: 2 };
+            
+            const elGorra = document.getElementById("stock-gorra");
+            if (elGorra) elGorra.innerText = (stock.gorra !== undefined ? stock.gorra : 3) + " disp.";
+
+            const elCamisa = document.getElementById("stock-camisa");
+            if (elCamisa) elCamisa.innerText = (stock.camisa !== undefined ? stock.camisa : 2) + " disp.";
+        });
+
+        // Bloqueo Anti-Monopolio del Nivel 3 (Camisa)
+        const codigoActual = localStorage.getItem("elegidos_student_code");
+        if (datosEstudianteActual && datosEstudianteActual.recompensas_canjeadas) {
+            if (datosEstudianteActual.recompensas_canjeadas.camisa) {
+                const btnCamisa = document.getElementById("btn-canje-camisa");
+                if (btnCamisa) {
+                    btnCamisa.disabled = true;
+                    btnCamisa.innerText = "Bloqueado";
+                    btnCamisa.style.background = "#64748b";
+                }
+            }
+        }
     }
+
+    window.canjearRecompensa = function(tipoPremio, costo) {
+        const codigoActual = localStorage.getItem("elegidos_student_code");
+        const ahora = (typeof obtenerFechaSistema === "function") ? obtenerFechaSistema() : new Date();
+        const mesActualKey = `${ahora.getFullYear()}-${ahora.getMonth() + 1}`;
+
+        const puntosActuales = parseInt(document.getElementById("display-puntos-lealtad").innerText) || 0;
+
+        if (puntosActuales < costo) {
+            return alert(`❌ Puntos insuficientes. Necesitas ${costo} puntos y actualmente tienes ${puntosActuales} pts.`);
+        }
+
+        // REGLA DE ORO 2: Límite de 1 Canje por Persona al Mes
+        if (datosEstudianteActual.ultimo_canje_mes === mesActualKey) {
+            return alert("⚠️ Regla del Programa: Solo puedes realizar 1 canje por mes. Espera al próximo mes para tu siguiente premio.");
+        }
+
+        // REGLA DE ORO 3: Anti-Monopolio de Camisa
+        if (tipoPremio === 'camisa' && datosEstudianteActual.recompensas_canjeadas && datosEstudianteActual.recompensas_canjeadas.camisa) {
+            return alert("🚫 Límite alcanzado: La camisa exclusiva solo puede ganarse 1 vez por estudiante durante todo el cuatrimestre.");
+        }
+
+        // Verificar Stock
+        db.ref(`sistema/recompensas_stock/${tipoPremio}`).once('value').then(snapStock => {
+            let stockDisponible = snapStock.exists() ? snapStock.val() : (tipoPremio === 'gorra' ? 3 : (tipoPremio === 'camisa' ? 2 : 999));
+
+            if (stockDisponible <= 0) {
+                return alert("❌ Lo sentimos, el stock de este premio está agotado.");
+            }
+
+            if (confirm(`🏆 ¿Confirmas canjear ${tipoPremio.toUpperCase()} por ${costo} puntos?\n\nObtendrás un ticket digital que deberás presentar al instructor en la siguiente clase presencial.`)) {
+                
+                const ticketId = `PREMIO-${tipoPremio.toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+                const updates = {};
+
+                // Descontar Stock
+                if (tipoPremio !== 'stickers') {
+                    updates[`sistema/recompensas_stock/${tipoPremio}`] = stockDisponible - 1;
+                }
+
+                // Registrar ticket digital en la cuenta del alumno
+                updates[`clase/${codigoActual}/boletos/${ticketId}`] = {
+                    codigo: ticketId,
+                    evento: `Premio: ${tipoPremio.toUpperCase()}`,
+                    tipo: "virtual",
+                    estado: "activo",
+                    fecha_canje: new Date().toISOString()
+                };
+
+                // Bloqueos de seguridad
+                updates[`clase/${codigoActual}/ultimo_canje_mes`] = mesActualKey;
+                updates[`clase/${codigoActual}/recompensas_canjeadas/${tipoPremio}`] = true;
+
+                db.ref().update(updates).then(() => {
+                    alert(`🎉 ¡FELICIDADES! Canje exitoso.\n\nSe ha generado el ticket digital "${ticketId}" en tu apartado de boletos. Preséntalo a tu instructor para reclamarlo en físico.`);
+                    if (typeof renderizarBoletosVinculados === 'function') renderizarBoletosVinculados();
+                    calcularPuntosLealtad();
+                });
+            }
+        });
+    };
+
+    // Auto-calcular puntos al cambiar a la pestaña boletos
+    const origCambiarSeccion = window.cambiarSeccion;
+    window.cambiarSeccion = function(tab, index) {
+        if (origCambiarSeccion) origCambiarSeccion(tab, index);
+        if (tab === 'boletos') {
+            setTimeout(calcularPuntosLealtad, 500);
+        }
+    };
+    
 </script>
+<!-- OVERLAY DE EXAMEN EN VIVO NATIVO (FORZADO) -->
+<div id="examen-live-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(9, 9, 11, 0.98); z-index:999999999; flex-direction:column; align-items:center; text-align:center; color:white; overflow-y: auto; padding: 40px 20px; animation: ruletaAparece 0.3s forwards;">
+    
+    <div style="width: 100%; max-width: 600px; margin-bottom: 20px;">
+        <div style="background: linear-gradient(135deg, #ef4444, #991b1b); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; box-shadow: 0 0 30px rgba(239, 68, 68, 0.6); font-size: 2rem;">📝</div>
+        <h2 id="examen-live-titulo" style="color: #ffffff; font-size:1.8rem; margin-bottom: 5px; font-weight: 900; letter-spacing: 1px;">EVALUACIÓN EN VIVO</h2>
+        <div id="examen-temporizador" style="background: #450a0a; border: 1px solid #7f1d1d; color: #fca5a5; font-family: monospace; font-size: 1.2rem; font-weight: bold; padding: 8px 16px; border-radius: 100px; display: inline-block; margin-bottom: 20px;">⏳ CALCULANDO TIEMPO...</div>
+    </div>
+
+    <div id="examen-preguntas-container" style="width: 100%; max-width: 600px; padding-bottom: 20px;"></div>
+
+    <button id="btn-enviar-examen" class="btn-main" style="background: #ef4444 !important; color: #fff !important; width: 100%; max-width: 600px; padding: 20px; font-size: 1.1rem; box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4);" onclick="enviarRespuestasExamen()">
+        🚀 ENVIAR RESPUESTAS Y FINALIZAR
+    </button>
+</div>
+
+
 </body>
+
 </html>
