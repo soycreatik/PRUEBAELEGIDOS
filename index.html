@@ -2373,9 +2373,22 @@ localStorage.removeItem("elegidos_is_admin");
 
         if (contenedorAcademico) contenedorAcademico.innerHTML = htmlAcademico;
 
-        document.getElementById("stat-asistidas").innerText = asistidas;
+     // FORZAR CÁLCULO DE ASISTENCIAS REALES (Incluso si el Admin mandó un PIN en un día que no está en el calendario)
+        let totalAsistenciasReales = 0;
+        let totalPermisosReales = 0;
+        if (asistenciasData) {
+            Object.values(asistenciasData).forEach(val => {
+                if (String(val).toLowerCase().startsWith("permiso")) {
+                    totalPermisosReales++;
+                } else {
+                    totalAsistenciasReales++;
+                }
+            });
+        }
+
+        document.getElementById("stat-asistidas").innerText = totalAsistenciasReales;
         document.getElementById("stat-faltas").innerText = ausencias;
-        document.getElementById("stat-permisos").innerText = permisos;
+        document.getElementById("stat-permisos").innerText = totalPermisosReales;
         document.getElementById("stat-total").innerText = FECHAS_CURSO.length;
         
         const porcentajeProgreso = Math.round((asistidas / FECHAS_CURSO.length) * 100) || 0;
@@ -3343,47 +3356,44 @@ function llenarSelectPermisos() {
     };
 
    // 2. CONEXIÓN EN TIEMPO REAL CON LA CONSOLA DEL ADMIN
-    window.iniciarRelojAsistenciaVirtual = function() {
+   window.iniciarRelojAsistenciaVirtual = function() {
         if (intervaloReloj) clearInterval(intervaloReloj);
         
-        // NUEVA ANTENA: Escucha la señal maestra de asistencia en vivo desde el Admin
         db.ref('sistema/asistencia_live').on('value', snap => {
             const data = snap.val();
             const modalPin = document.getElementById('modal-pin-asistencia');
             
-            // Verificamos si el admin encendió el Pop-up
             if (data && data.activo === true) {
                 const ahora = typeof obtenerFechaSistema === 'function' ? obtenerFechaSistema() : new Date();
                 const hoyStr = ahora.getFullYear() + '-' + String(ahora.getMonth() + 1).padStart(2, '0') + '-' + String(ahora.getDate()).padStart(2, '0');
-                
-                // --- VALIDACIÓN DE TARGET (A QUIÉN VA DIRIGIDO) ---
                 const codigoActual = localStorage.getItem("elegidos_student_code");
                 
+                // VALIDACIÓN DE OBJETIVO (Se añade la compatibilidad con el botón Meet del Admin)
                 let soyObjetivo = false;
                 if (data.target === "todos") soyObjetivo = true;
-                if (data.target === "online") soyObjetivo = true; // Si está leyendo esto, está online
+                if (data.target === "online") soyObjetivo = true;
                 if (data.target === "especifico" && data.targetCodigo === codigoActual) soyObjetivo = true;
+                if (data.target === "meet" && localStorage.getItem('ingreso_meet_' + hoyStr) === 'true') soyObjetivo = true;
                 
-                if (!soyObjetivo) return; // Si no soy el objetivo, no me muestro
-                // --------------------------------------------------
+                if (!soyObjetivo) {
+                    if (modalPin) modalPin.classList.remove('activo');
+                    return; 
+                }
 
-                const claseDeHoy = FECHAS_CURSO.find(c => c.fecha === hoyStr && c.modalidad === 'Online');
+                // BUSCAR SI YA ASISTIÓ HOY (independiente de si está en el calendario o es una fecha sorpresa)
+                let claseDeHoy = FECHAS_CURSO.find(c => c.fecha === hoyStr);
+                let claseId = claseDeHoy ? claseDeHoy.id : hoyStr;
                 
-                if (claseDeHoy) {
-                    const yaAsistio = datosEstudianteActual && datosEstudianteActual.asistencias && datosEstudianteActual.asistencias[claseDeHoy.id];
-                    
-                    // Solo invade la pantalla si el estudiante no ha colocado el PIN correcto aún
-                    if (!yaAsistio) {
-                        if (modalPin) modalPin.classList.add('activo');
-                        popupAsistenciaMostrado = true;
-                    }
+                const yaAsistio = datosEstudianteActual && datosEstudianteActual.asistencias && datosEstudianteActual.asistencias[claseId];
+                
+                if (!yaAsistio) {
+                    if (modalPin) modalPin.classList.add('activo');
+                    popupAsistenciaMostrado = true;
                 } else {
-                     // Si no hay clase asignada, igual mostramos el pop-up por si el admin está forzándolo
-                     if (modalPin) modalPin.classList.add('activo');
-                     popupAsistenciaMostrado = true;
+                    if (modalPin) modalPin.classList.remove('activo');
+                    popupAsistenciaMostrado = false;
                 }
             } else {
-                // Si el Admin apaga el Pop-up (activo === false), se le oculta al estudiante
                 if (modalPin) modalPin.classList.remove('activo');
                 popupAsistenciaMostrado = false;
             }
